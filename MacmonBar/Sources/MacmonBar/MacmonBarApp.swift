@@ -21,6 +21,7 @@ struct MacmonBarApp: App {
         status: monitor.status,
         showsText: monitor.showsMenuBarText,
         showsGraph: monitor.showsMenuBarGraph,
+        showsTextLabels: monitor.showsMenuBarTextLabels,
         metrics: monitor.selectedMenuBarMetrics,
         revision: monitor.revision
       )

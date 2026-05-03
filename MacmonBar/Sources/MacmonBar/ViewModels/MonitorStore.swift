@@ -14,6 +14,7 @@ final class MonitorStore {
   private let legacyMenuBarStylePreferenceKey = "menuBarDisplayStyle"
   private let menuBarShowsTextPreferenceKey = "menuBarShowsText"
   private let menuBarShowsGraphPreferenceKey = "menuBarShowsGraph"
+  private let menuBarTextShowsLabelsPreferenceKey = "menuBarTextShowsLabels"
   private let menuBarMetricsPreferenceKey = "menuBarMetrics"
   private let minimumPublishInterval: TimeInterval = 1
   private var streamTask: Task<Void, Never>?
@@ -34,6 +35,13 @@ final class MonitorStore {
   var showsMenuBarGraph: Bool {
     didSet {
       UserDefaults.standard.set(showsMenuBarGraph, forKey: menuBarShowsGraphPreferenceKey)
+      revision += 1
+    }
+  }
+
+  var showsMenuBarTextLabels: Bool {
+    didSet {
+      UserDefaults.standard.set(showsMenuBarTextLabels, forKey: menuBarTextShowsLabelsPreferenceKey)
       revision += 1
     }
   }
@@ -59,7 +67,7 @@ final class MonitorStore {
       return "Macmon"
     }
 
-    return selectedMenuBarMetrics.compactText(for: snapshot)
+    return selectedMenuBarMetrics.compactText(for: snapshot, includeLabels: showsMenuBarTextLabels)
   }
 
   var intervalTitle: String {
@@ -101,6 +109,7 @@ final class MonitorStore {
     )
     self.showsMenuBarText = presentation.showsText
     self.showsMenuBarGraph = presentation.showsGraph
+    self.showsMenuBarTextLabels = Self.loadMenuBarTextShowsLabels(key: menuBarTextShowsLabelsPreferenceKey)
     self.selectedMenuBarMetrics = Self.loadMenuBarMetrics(key: menuBarMetricsPreferenceKey)
   }
 
@@ -305,6 +314,14 @@ final class MonitorStore {
 
     let metrics = rawValues.compactMap(MenuBarMetric.init(rawValue:))
     return metrics.isEmpty ? [.power, .cpuTotal] : metrics
+  }
+
+  private static func loadMenuBarTextShowsLabels(key: String) -> Bool {
+    guard UserDefaults.standard.object(forKey: key) != nil else {
+      return true
+    }
+
+    return UserDefaults.standard.bool(forKey: key)
   }
 }
 

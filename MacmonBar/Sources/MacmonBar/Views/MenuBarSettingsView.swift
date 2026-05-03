@@ -24,16 +24,7 @@ struct MenuBarSettingsView: View {
           .foregroundStyle(.secondary)
 
         LazyVGrid(columns: previewColumns, spacing: 8) {
-          MenuBarPresentationPreviewCard(
-            title: MenuBarPresentationKind.text.title,
-            isSelected: store.isMenuBarPresentationSelected(.text),
-            action: { store.toggleMenuBarPresentation(.text) }
-          ) {
-            MenuBarTextPreviewView(
-              snapshot: store.snapshot,
-              metrics: store.selectedMenuBarMetrics
-            )
-          }
+          MenuBarTextPresentationCard(store: store)
 
           MenuBarPresentationPreviewCard(
             title: MenuBarPresentationKind.graph.title,

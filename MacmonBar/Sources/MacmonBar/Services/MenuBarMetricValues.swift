@@ -1,25 +1,27 @@
 import Foundation
 
 extension MenuBarMetric {
-  func compactText(for snapshot: MetricSnapshot) -> String {
-    switch self {
+  func compactText(for snapshot: MetricSnapshot, includeLabel: Bool = true) -> String {
+    let value = switch self {
     case .cpuTotal:
-      return "\(shortTitle) \(MetricText.compactPercent(snapshot.cpuUsageRatio))"
+      MetricText.compactPercent(snapshot.cpuUsageRatio)
     case .pCPU:
-      return "\(shortTitle) \(MetricText.compactPercent(snapshot.pcpuUsage.utilizationRatio))"
+      MetricText.compactPercent(snapshot.pcpuUsage.utilizationRatio)
     case .eCPU:
-      return "\(shortTitle) \(MetricText.compactPercent(snapshot.ecpuUsage.utilizationRatio))"
+      MetricText.compactPercent(snapshot.ecpuUsage.utilizationRatio)
     case .gpu:
-      return "\(shortTitle) \(MetricText.compactPercent(snapshot.gpuUsage.utilizationRatio))"
+      MetricText.compactPercent(snapshot.gpuUsage.utilizationRatio)
     case .memory:
-      return "\(shortTitle) \(MetricText.compactPercent(snapshot.memory.ramUsageRatio))"
+      MetricText.compactPercent(snapshot.memory.ramUsageRatio)
     case .power:
-      return "\(shortTitle) \(MetricText.compactWatts(snapshot.sysPower))"
+      MetricText.compactWatts(snapshot.sysPower)
     case .cpuPower:
-      return "\(shortTitle) \(MetricText.compactWatts(snapshot.cpuPower))"
+      MetricText.compactWatts(snapshot.cpuPower)
     case .gpuPower:
-      return "\(shortTitle) \(MetricText.compactWatts(snapshot.gpuPower))"
+      MetricText.compactWatts(snapshot.gpuPower)
     }
+
+    return includeLabel ? "\(shortTitle) \(value)" : value
   }
 
   func rawValue(from snapshot: MetricSnapshot) -> Double {
@@ -57,8 +59,8 @@ extension MenuBarMetric {
 }
 
 extension Array where Element == MenuBarMetric {
-  func compactText(for snapshot: MetricSnapshot) -> String {
-    map { $0.compactText(for: snapshot) }
+  func compactText(for snapshot: MetricSnapshot, includeLabels: Bool = true) -> String {
+    map { $0.compactText(for: snapshot, includeLabel: includeLabels) }
       .joined(separator: "  ")
   }
 }

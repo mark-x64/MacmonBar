@@ -6,6 +6,7 @@ struct MenuBarLabelView: View {
   let status: MonitorStatus
   let showsText: Bool
   let showsGraph: Bool
+  let showsTextLabels: Bool
   let metrics: [MenuBarMetric]
   let revision: Int
 
@@ -40,6 +41,6 @@ struct MenuBarLabelView: View {
       return "Macmon"
     }
 
-    return metrics.compactText(for: snapshot)
+    return metrics.compactText(for: snapshot, includeLabels: showsTextLabels)
   }
 }

@@ -65,3 +65,27 @@ func clampsMemoryUsageRatio() {
   #expect(memory.ramUsageRatio == 1)
   #expect(memory.swapUsageRatio == 0)
 }
+
+@Test
+func formatsMenuBarTextWithoutMetricLabels() {
+  let snapshot = MetricSnapshot(
+    temp: TemperatureMetrics(cpuAverage: 42, gpuAverage: 40),
+    memory: MemoryMetrics(ramTotal: 100, ramUsage: 50, swapTotal: 100, swapUsage: 10),
+    ecpuUsage: FrequencyUsage(frequencyMHz: 1200, utilizationRatio: 0.36),
+    pcpuUsage: FrequencyUsage(frequencyMHz: 2200, utilizationRatio: 0.13),
+    cpuUsageRatio: 0.2,
+    gpuUsage: FrequencyUsage(frequencyMHz: 400, utilizationRatio: 0.1),
+    cpuPower: 1.2,
+    gpuPower: 0.4,
+    anePower: 0,
+    allPower: 1.6,
+    sysPower: 21,
+    ramPower: 0.1,
+    gpuRamPower: 0
+  )
+
+  let metrics: [MenuBarMetric] = [.power, .pCPU, .eCPU]
+
+  #expect(metrics.compactText(for: snapshot, includeLabels: true) == "PWR 21.0W  P 13%  E 36%")
+  #expect(metrics.compactText(for: snapshot, includeLabels: false) == "21.0W  13%  36%")
+}

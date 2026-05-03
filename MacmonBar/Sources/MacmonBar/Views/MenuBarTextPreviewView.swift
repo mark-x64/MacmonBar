@@ -3,6 +3,7 @@ import SwiftUI
 struct MenuBarTextPreviewView: View {
   let snapshot: MetricSnapshot?
   let metrics: [MenuBarMetric]
+  let showsLabels: Bool
 
   var body: some View {
     Text(labelText)
@@ -20,6 +21,6 @@ struct MenuBarTextPreviewView: View {
       return "Macmon"
     }
 
-    return metrics.compactText(for: snapshot)
+    return metrics.compactText(for: snapshot, includeLabels: showsLabels)
   }
 }
