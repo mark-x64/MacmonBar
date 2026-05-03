@@ -32,11 +32,10 @@ struct MenuBarTextPresentationCard: View {
       }
       .buttonStyle(.plain)
 
-      Toggle("Show metric labels", isOn: $store.showsMenuBarTextLabels)
-        .toggleStyle(.checkbox)
-        .font(.caption2)
-        .foregroundStyle(.secondary)
-        .help("Show labels such as PWR, P, and E")
+      MenuBarTextLabelToggleView(
+        isOn: store.showsMenuBarTextLabels,
+        action: { store.showsMenuBarTextLabels.toggle() }
+      )
     }
     .frame(maxWidth: .infinity, minHeight: 112, alignment: .topLeading)
     .padding(10)
