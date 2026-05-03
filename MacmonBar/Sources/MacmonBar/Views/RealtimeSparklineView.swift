@@ -52,6 +52,10 @@ struct RealtimeSparklineView: View {
       }
     }
 
-    context.stroke(path, with: .color(color), lineWidth: 1.8)
+    context.stroke(
+      path,
+      with: .color(color),
+      style: StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round)
+    )
   }
 }
