@@ -10,11 +10,14 @@ struct IntervalControlView: View {
   var body: some View {
     HStack(spacing: 4) {
       Button(action: decreaseAction) {
-        Label("Decrease sampling interval", systemImage: "minus")
-          .labelStyle(.iconOnly)
+        Image(systemName: "minus")
+          .font(.caption.weight(.semibold))
+          .frame(width: 28, height: 28)
+          .contentShape(.circle)
       }
-      .buttonStyle(.borderless)
+      .buttonStyle(.plain)
       .disabled(!canDecrease)
+      .opacity(canDecrease ? 1 : 0.35)
       .help("Sample more often")
 
       Text(intervalTitle)
@@ -24,15 +27,18 @@ struct IntervalControlView: View {
         .frame(width: 36)
 
       Button(action: increaseAction) {
-        Label("Increase sampling interval", systemImage: "plus")
-          .labelStyle(.iconOnly)
+        Image(systemName: "plus")
+          .font(.caption.weight(.semibold))
+          .frame(width: 28, height: 28)
+          .contentShape(.circle)
       }
-      .buttonStyle(.borderless)
+      .buttonStyle(.plain)
       .disabled(!canIncrease)
+      .opacity(canIncrease ? 1 : 0.35)
       .help("Sample less often")
     }
-    .padding(.horizontal, 6)
-    .padding(.vertical, 4)
+    .padding(.horizontal, 4)
+    .padding(.vertical, 2)
     .background(.quaternary.opacity(0.45), in: .capsule)
   }
 }

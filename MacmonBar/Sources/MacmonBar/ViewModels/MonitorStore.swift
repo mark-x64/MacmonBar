@@ -15,6 +15,7 @@ final class MonitorStore {
   private let menuBarMetricsPreferenceKey = "menuBarMetrics"
   private let minimumPublishInterval: TimeInterval = 1
   private var streamTask: Task<Void, Never>?
+  private var snapshotSession: MacmonSnapshotSession?
   private var streamGeneration = 0
   @ObservationIgnored private var historyBuffer: [MetricSnapshot] = []
   @ObservationIgnored private var lastPublishDate = Date.distantPast
@@ -106,6 +107,8 @@ final class MonitorStore {
 
   func stop() {
     streamGeneration += 1
+    snapshotSession?.cancel()
+    snapshotSession = nil
     streamTask?.cancel()
     streamTask = nil
     status = .stopped
@@ -167,15 +170,17 @@ final class MonitorStore {
     UserDefaults.standard.set(nextInterval, forKey: intervalPreferenceKey)
 
     if effectiveIntervalMilliseconds != previousEffectiveInterval {
-      restart()
+      restartImmediately()
     }
   }
 
   private func consumeSnapshots(generation: Int) async {
     let intervalMilliseconds = effectiveIntervalMilliseconds
+    let session = client.startSnapshots(intervalMilliseconds: intervalMilliseconds)
+    snapshotSession = session
 
     do {
-      for try await nextSnapshot in client.snapshots(intervalMilliseconds: intervalMilliseconds) {
+      for try await nextSnapshot in session.stream {
         apply(nextSnapshot)
       }
 
@@ -189,8 +194,15 @@ final class MonitorStore {
     }
 
     if streamGeneration == generation {
+      snapshotSession = nil
       streamTask = nil
     }
+  }
+
+  private func restartImmediately() {
+    stop()
+    lastPublishDate = .distantPast
+    start()
   }
 
   private func apply(_ nextSnapshot: MetricSnapshot) {

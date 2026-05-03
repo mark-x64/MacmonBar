@@ -7,9 +7,9 @@ struct MacmonProcessClient: Sendable {
     self.locator = locator
   }
 
-  func snapshots(intervalMilliseconds: Int) -> AsyncThrowingStream<MetricSnapshot, Error> {
-    AsyncThrowingStream { continuation in
-      let session = ProcessSession()
+  func startSnapshots(intervalMilliseconds: Int) -> MacmonSnapshotSession {
+    let session = ProcessSession()
+    let stream = AsyncThrowingStream<MetricSnapshot, Error> { continuation in
 
       do {
         let executableURL = try locator.resolve()
@@ -74,6 +74,19 @@ struct MacmonProcessClient: Sendable {
         session.terminate()
       }
     }
+
+    return MacmonSnapshotSession(stream: stream, cancel: session.terminate)
+  }
+}
+
+struct MacmonSnapshotSession: Sendable {
+  let stream: AsyncThrowingStream<MetricSnapshot, Error>
+  let cancel: @Sendable () -> Void
+}
+
+extension MacmonProcessClient {
+  func snapshots(intervalMilliseconds: Int) -> AsyncThrowingStream<MetricSnapshot, Error> {
+    startSnapshots(intervalMilliseconds: intervalMilliseconds).stream
   }
 }
 
