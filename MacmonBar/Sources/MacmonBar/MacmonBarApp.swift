@@ -19,7 +19,8 @@ struct MacmonBarApp: App {
         snapshot: monitor.snapshot,
         history: monitor.history,
         status: monitor.status,
-        style: monitor.menuBarDisplayStyle,
+        showsText: monitor.showsMenuBarText,
+        showsGraph: monitor.showsMenuBarGraph,
         metrics: monitor.selectedMenuBarMetrics,
         revision: monitor.revision
       )

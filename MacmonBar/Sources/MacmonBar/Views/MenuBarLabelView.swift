@@ -4,19 +4,42 @@ struct MenuBarLabelView: View {
   let snapshot: MetricSnapshot?
   let history: [MetricSnapshot]
   let status: MonitorStatus
-  let style: MenuBarDisplayStyle
+  let showsText: Bool
+  let showsGraph: Bool
   let metrics: [MenuBarMetric]
   let revision: Int
 
   var body: some View {
-    MenuBarStylePreviewView(
-      snapshot: snapshot,
-      history: history,
-      status: status,
-      style: style,
-      metrics: metrics,
-      isPreview: false
-    )
+    HStack(spacing: 5) {
+      if !showsText && !showsGraph {
+        Image(systemName: status.symbolName)
+          .symbolRenderingMode(.hierarchical)
+          .foregroundStyle(status.tint)
+          .accessibilityHidden(true)
+      }
+
+      if showsGraph {
+        Image(nsImage: MenuBarGraphRenderer.image(snapshot: snapshot, history: history, metrics: metrics))
+          .interpolation(.high)
+          .frame(width: 46, height: 16)
+          .accessibilityHidden(true)
+      }
+
+      if showsText {
+        Text(labelText)
+          .monospacedDigit()
+          .lineLimit(1)
+          .minimumScaleFactor(0.75)
+      }
+    }
     .id(revision)
+  }
+
+  private var labelText: String {
+    guard let snapshot else {
+      return "Macmon"
+    }
+
+    return metrics.compactText(for: snapshot)
   }
 }

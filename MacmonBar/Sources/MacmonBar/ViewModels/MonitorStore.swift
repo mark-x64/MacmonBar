@@ -11,7 +11,9 @@ final class MonitorStore {
   private let backgroundIntervalMilliseconds = 1_000
   private let maximumIntervalMilliseconds = 10_000
   private let intervalStepMilliseconds = 250
-  private let menuBarStylePreferenceKey = "menuBarDisplayStyle"
+  private let legacyMenuBarStylePreferenceKey = "menuBarDisplayStyle"
+  private let menuBarShowsTextPreferenceKey = "menuBarShowsText"
+  private let menuBarShowsGraphPreferenceKey = "menuBarShowsGraph"
   private let menuBarMetricsPreferenceKey = "menuBarMetrics"
   private let minimumPublishInterval: TimeInterval = 1
   private var streamTask: Task<Void, Never>?
@@ -22,9 +24,17 @@ final class MonitorStore {
   @ObservationIgnored private var isInterfaceVisible = false
 
   var sampleIntervalMilliseconds: Int
-  var menuBarDisplayStyle: MenuBarDisplayStyle {
+  var showsMenuBarText: Bool {
     didSet {
-      UserDefaults.standard.set(menuBarDisplayStyle.rawValue, forKey: menuBarStylePreferenceKey)
+      UserDefaults.standard.set(showsMenuBarText, forKey: menuBarShowsTextPreferenceKey)
+      revision += 1
+    }
+  }
+
+  var showsMenuBarGraph: Bool {
+    didSet {
+      UserDefaults.standard.set(showsMenuBarGraph, forKey: menuBarShowsGraphPreferenceKey)
+      revision += 1
     }
   }
 
@@ -34,6 +44,7 @@ final class MonitorStore {
         selectedMenuBarMetrics.map(\.rawValue),
         forKey: menuBarMetricsPreferenceKey
       )
+      revision += 1
     }
   }
 
@@ -83,7 +94,13 @@ final class MonitorStore {
       minimum: minimumIntervalMilliseconds,
       maximum: maximumIntervalMilliseconds
     )
-    self.menuBarDisplayStyle = Self.loadMenuBarDisplayStyle(key: menuBarStylePreferenceKey)
+    let presentation = Self.loadMenuBarPresentation(
+      textKey: menuBarShowsTextPreferenceKey,
+      graphKey: menuBarShowsGraphPreferenceKey,
+      legacyStyleKey: legacyMenuBarStylePreferenceKey
+    )
+    self.showsMenuBarText = presentation.showsText
+    self.showsMenuBarGraph = presentation.showsGraph
     self.selectedMenuBarMetrics = Self.loadMenuBarMetrics(key: menuBarMetricsPreferenceKey)
   }
 
@@ -154,6 +171,24 @@ final class MonitorStore {
 
   func isMenuBarMetricSelected(_ metric: MenuBarMetric) -> Bool {
     selectedMenuBarMetrics.contains(metric)
+  }
+
+  func toggleMenuBarPresentation(_ presentation: MenuBarPresentationKind) {
+    switch presentation {
+    case .text:
+      showsMenuBarText.toggle()
+    case .graph:
+      showsMenuBarGraph.toggle()
+    }
+  }
+
+  func isMenuBarPresentationSelected(_ presentation: MenuBarPresentationKind) -> Bool {
+    switch presentation {
+    case .text:
+      return showsMenuBarText
+    case .graph:
+      return showsMenuBarGraph
+    }
   }
 
   private func updateInterval(_ intervalMilliseconds: Int) {
@@ -234,15 +269,33 @@ final class MonitorStore {
     return interval.clamped(to: minimum...maximum)
   }
 
-  private static func loadMenuBarDisplayStyle(key: String) -> MenuBarDisplayStyle {
-    guard
-      let rawValue = UserDefaults.standard.string(forKey: key),
-      let style = MenuBarDisplayStyle(rawValue: rawValue)
-    else {
-      return .combined
-    }
+  private static func loadMenuBarPresentation(
+    textKey: String,
+    graphKey: String,
+    legacyStyleKey: String
+  ) -> MenuBarPresentationSelection {
+    let defaults = UserDefaults.standard
+    let legacy = legacyMenuBarPresentation(key: legacyStyleKey)
+    let hasTextPreference = defaults.object(forKey: textKey) != nil
+    let hasGraphPreference = defaults.object(forKey: graphKey) != nil
 
-    return style
+    return MenuBarPresentationSelection(
+      showsText: hasTextPreference ? defaults.bool(forKey: textKey) : legacy.showsText,
+      showsGraph: hasGraphPreference ? defaults.bool(forKey: graphKey) : legacy.showsGraph
+    )
+  }
+
+  private static func legacyMenuBarPresentation(key: String) -> MenuBarPresentationSelection {
+    switch UserDefaults.standard.string(forKey: key) {
+    case "text":
+      return MenuBarPresentationSelection(showsText: true, showsGraph: false)
+    case "graph":
+      return MenuBarPresentationSelection(showsText: false, showsGraph: true)
+    case "combined":
+      return MenuBarPresentationSelection(showsText: true, showsGraph: true)
+    default:
+      return MenuBarPresentationSelection(showsText: true, showsGraph: true)
+    }
   }
 
   private static func loadMenuBarMetrics(key: String) -> [MenuBarMetric] {

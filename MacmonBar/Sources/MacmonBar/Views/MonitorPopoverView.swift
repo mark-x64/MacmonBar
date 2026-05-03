@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MonitorPopoverView: View {
   let store: MonitorStore
+  @State private var page: MonitorPopoverPage = .dashboard
 
   var body: some View {
     TimelineView(.periodic(from: .now, by: 1)) { _ in
@@ -19,13 +20,14 @@ struct MonitorPopoverView: View {
     VStack(alignment: .leading, spacing: 10) {
       header
 
-      if let snapshot = store.snapshot {
-        SnapshotContentView(snapshot: snapshot, history: store.history)
-      } else {
-        EmptyMonitorView(status: store.status)
+      Group {
+        switch page {
+        case .dashboard:
+          dashboard
+        case .settings:
+          MenuBarSettingsView(store: store)
+        }
       }
-
-      MenuBarSettingsBlockView(store: store)
 
       Divider()
 
@@ -35,17 +37,36 @@ struct MonitorPopoverView: View {
     .frame(width: 520)
   }
 
+  @ViewBuilder
+  private var dashboard: some View {
+    if let snapshot = store.snapshot {
+      SnapshotContentView(snapshot: snapshot, history: store.history)
+    } else {
+      EmptyMonitorView(status: store.status)
+    }
+  }
+
   private var header: some View {
     HStack(spacing: 10) {
-      Image(systemName: store.status.symbolName)
-        .foregroundStyle(store.status.tint)
-        .symbolRenderingMode(.hierarchical)
-        .font(.headline)
-        .frame(width: 22, height: 22)
-        .accessibilityHidden(true)
+      if page == .settings {
+        Button(action: showDashboard) {
+          Label("Back", systemImage: "chevron.left")
+            .labelStyle(.iconOnly)
+            .frame(width: 22, height: 22)
+        }
+        .buttonStyle(.borderless)
+        .help("Back")
+      } else {
+        Image(systemName: store.status.symbolName)
+          .foregroundStyle(store.status.tint)
+          .symbolRenderingMode(.hierarchical)
+          .font(.headline)
+          .frame(width: 22, height: 22)
+          .accessibilityHidden(true)
+      }
 
       VStack(alignment: .leading, spacing: 2) {
-        Text(store.snapshot.map(MetricText.chipLine) ?? "Macmon")
+        Text(headerTitle)
           .font(.system(.headline, design: .rounded, weight: .semibold))
           .lineLimit(1)
 
@@ -57,13 +78,22 @@ struct MonitorPopoverView: View {
 
       Spacer(minLength: 8)
 
-      IntervalControlView(
-        intervalTitle: store.intervalTitle,
-        canDecrease: store.canDecreaseInterval,
-        canIncrease: store.canIncreaseInterval,
-        decreaseAction: store.decreaseInterval,
-        increaseAction: store.increaseInterval
-      )
+      if page == .dashboard {
+        IntervalControlView(
+          intervalTitle: store.intervalTitle,
+          canDecrease: store.canDecreaseInterval,
+          canIncrease: store.canIncreaseInterval,
+          decreaseAction: store.decreaseInterval,
+          increaseAction: store.increaseInterval
+        )
+
+        Button(action: showSettings) {
+          Label("Settings", systemImage: "gearshape")
+            .labelStyle(.iconOnly)
+        }
+        .buttonStyle(.borderless)
+        .help("Settings")
+      }
 
       Button {
         NSApplication.shared.terminate(nil)
@@ -101,6 +131,32 @@ struct MonitorPopoverView: View {
   }
 
   private var headerSubtitle: String {
-    store.status == .live ? "Sampling every \(store.activeIntervalTitle)" : store.status.message
+    switch page {
+    case .dashboard:
+      return store.status == .live ? "Sampling every \(store.activeIntervalTitle)" : store.status.message
+    case .settings:
+      return "Menu bar display"
+    }
+  }
+
+  private var headerTitle: String {
+    switch page {
+    case .dashboard:
+      return store.snapshot.map(MetricText.chipLine) ?? "Macmon"
+    case .settings:
+      return "Settings"
+    }
+  }
+
+  private func showSettings() {
+    withAnimation(.snappy(duration: 0.18)) {
+      page = .settings
+    }
+  }
+
+  private func showDashboard() {
+    withAnimation(.snappy(duration: 0.18)) {
+      page = .dashboard
+    }
   }
 }

@@ -1,34 +1,5 @@
 import Foundation
 
-enum MenuBarDisplayStyle: String, CaseIterable, Identifiable, Sendable {
-  case text
-  case graph
-  case combined
-
-  var id: String {
-    rawValue
-  }
-
-  var title: String {
-    switch self {
-    case .text:
-      return "Text"
-    case .graph:
-      return "Graph"
-    case .combined:
-      return "Both"
-    }
-  }
-
-  var showsText: Bool {
-    self != .graph
-  }
-
-  var showsGraph: Bool {
-    self != .text
-  }
-}
-
 enum MenuBarMetric: String, CaseIterable, Identifiable, Sendable {
   case cpuTotal
   case pCPU
