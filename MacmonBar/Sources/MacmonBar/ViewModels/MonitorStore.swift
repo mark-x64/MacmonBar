@@ -7,7 +7,7 @@ final class MonitorStore {
   private let client: MacmonProcessClient
   private let historyLimit = 90
   private let intervalPreferenceKey = "sampleIntervalMilliseconds"
-  private let minimumIntervalMilliseconds = 250
+  private let minimumIntervalMilliseconds = 500
   private let maximumIntervalMilliseconds = 10_000
   private let intervalStepMilliseconds = 250
   private let menuBarStylePreferenceKey = "menuBarDisplayStyle"
