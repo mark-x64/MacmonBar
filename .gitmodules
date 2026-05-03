@@ -1,0 +1,4 @@
+[submodule "macmon"]
+	path = macmon
+	url = https://github.com/vladkens/macmon.git
+	branch = main

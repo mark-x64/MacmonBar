@@ -1,0 +1,24 @@
+.PHONY: app build clean macmon release run test
+
+SWIFT_ENV = CLANG_MODULE_CACHE_PATH="$(CURDIR)/.build/clang-module-cache"
+
+macmon:
+	cd ../macmon && cargo build --release
+
+build:
+	$(SWIFT_ENV) swift build
+
+release:
+	$(SWIFT_ENV) swift build -c release
+
+test:
+	$(SWIFT_ENV) swift test
+
+run: macmon
+	$(SWIFT_ENV) MACMON_BIN="$(CURDIR)/../macmon/target/release/macmon" swift run MacmonBar
+
+app:
+	./Scripts/package-app.sh
+
+clean:
+	swift package clean
