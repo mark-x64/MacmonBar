@@ -19,18 +19,18 @@ struct MenuBarLabelView: View {
           .accessibilityHidden(true)
       }
 
-      if showsGraph {
-        Image(nsImage: MenuBarGraphRenderer.image(snapshot: snapshot, history: history, metrics: metrics))
-          .interpolation(.high)
-          .frame(width: 46, height: 16)
-          .accessibilityHidden(true)
-      }
-
       if showsText {
         Text(labelText)
           .monospacedDigit()
           .lineLimit(1)
           .minimumScaleFactor(0.75)
+      }
+
+      if showsGraph {
+        Image(nsImage: MenuBarGraphRenderer.image(snapshot: snapshot, history: history, metrics: metrics))
+          .interpolation(.high)
+          .frame(width: 46, height: 16)
+          .accessibilityHidden(true)
       }
     }
     .id(revision)

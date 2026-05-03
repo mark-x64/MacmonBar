@@ -5,7 +5,7 @@ struct MenuBarTextLabelToggleView: View {
   let action: () -> Void
 
   var body: some View {
-    Button(action: action) {
+    Button(action: toggle) {
       HStack(spacing: 7) {
         Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
           .font(.caption.weight(.semibold))
@@ -25,6 +25,7 @@ struct MenuBarTextLabelToggleView: View {
     }
     .buttonStyle(.plain)
     .help("Show labels such as PWR, P, and E")
+    .animation(.snappy(duration: 0.18), value: isOn)
   }
 
   private var backgroundStyle: Color {
@@ -33,5 +34,11 @@ struct MenuBarTextLabelToggleView: View {
 
   private var foregroundStyle: Color {
     isOn ? .white : .secondary
+  }
+
+  private func toggle() {
+    withAnimation(.snappy(duration: 0.18)) {
+      action()
+    }
   }
 }
