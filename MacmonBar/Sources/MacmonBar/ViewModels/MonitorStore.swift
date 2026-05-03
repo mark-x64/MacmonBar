@@ -12,8 +12,11 @@ final class MonitorStore {
   private let intervalStepMilliseconds = 250
   private let menuBarStylePreferenceKey = "menuBarDisplayStyle"
   private let menuBarMetricsPreferenceKey = "menuBarMetrics"
+  private let minimumPublishInterval: TimeInterval = 1
   private var streamTask: Task<Void, Never>?
   private var streamGeneration = 0
+  @ObservationIgnored private var historyBuffer: [MetricSnapshot] = []
+  @ObservationIgnored private var lastPublishDate = Date.distantPast
 
   var sampleIntervalMilliseconds: Int
   var menuBarDisplayStyle: MenuBarDisplayStyle {
@@ -153,14 +156,23 @@ final class MonitorStore {
   }
 
   private func apply(_ nextSnapshot: MetricSnapshot) {
-    snapshot = nextSnapshot
-    history.append(nextSnapshot)
+    historyBuffer.append(nextSnapshot)
 
-    if history.count > historyLimit {
-      history.removeFirst(history.count - historyLimit)
+    if historyBuffer.count > historyLimit {
+      historyBuffer.removeFirst(historyBuffer.count - historyLimit)
     }
 
-    lastUpdated = .now
+    let now = Date.now
+    let shouldPublish = snapshot == nil || now.timeIntervalSince(lastPublishDate) >= minimumPublishInterval
+
+    guard shouldPublish else {
+      return
+    }
+
+    snapshot = nextSnapshot
+    history = historyBuffer
+    lastUpdated = now
+    lastPublishDate = now
     status = .live
     revision += 1
   }
