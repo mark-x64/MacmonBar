@@ -8,7 +8,10 @@ struct MonitorPopoverView: View {
       content
     }
     .onAppear {
-      store.start()
+      store.interfaceDidOpen()
+    }
+    .onDisappear {
+      store.interfaceDidClose()
     }
   }
 
@@ -46,7 +49,7 @@ struct MonitorPopoverView: View {
           .font(.system(.headline, design: .rounded, weight: .semibold))
           .lineLimit(1)
 
-        Text(store.status.message)
+        Text(headerSubtitle)
           .font(.caption)
           .foregroundStyle(.secondary)
           .lineLimit(2)
@@ -95,5 +98,9 @@ struct MonitorPopoverView: View {
         .font(.caption)
         .foregroundStyle(.secondary)
     }
+  }
+
+  private var headerSubtitle: String {
+    store.status == .live ? "Sampling every \(store.activeIntervalTitle)" : store.status.message
   }
 }

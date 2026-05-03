@@ -8,6 +8,7 @@ final class MonitorStore {
   private let historyLimit = 90
   private let intervalPreferenceKey = "sampleIntervalMilliseconds"
   private let minimumIntervalMilliseconds = 500
+  private let backgroundIntervalMilliseconds = 1_000
   private let maximumIntervalMilliseconds = 10_000
   private let intervalStepMilliseconds = 250
   private let menuBarStylePreferenceKey = "menuBarDisplayStyle"
@@ -17,6 +18,7 @@ final class MonitorStore {
   private var streamGeneration = 0
   @ObservationIgnored private var historyBuffer: [MetricSnapshot] = []
   @ObservationIgnored private var lastPublishDate = Date.distantPast
+  @ObservationIgnored private var isInterfaceVisible = false
 
   var sampleIntervalMilliseconds: Int
   var menuBarDisplayStyle: MenuBarDisplayStyle {
@@ -49,7 +51,19 @@ final class MonitorStore {
   }
 
   var intervalTitle: String {
-    let seconds = Double(sampleIntervalMilliseconds) / 1_000
+    Self.intervalTitle(for: sampleIntervalMilliseconds)
+  }
+
+  var activeIntervalTitle: String {
+    Self.intervalTitle(for: effectiveIntervalMilliseconds)
+  }
+
+  private var effectiveIntervalMilliseconds: Int {
+    isInterfaceVisible ? sampleIntervalMilliseconds : backgroundIntervalMilliseconds
+  }
+
+  private static func intervalTitle(for intervalMilliseconds: Int) -> String {
+    let seconds = Double(intervalMilliseconds) / 1_000
     return "\(seconds.formatted(.number.precision(.fractionLength(seconds < 1 ? 2 : 1))))s"
   }
 
@@ -105,6 +119,24 @@ final class MonitorStore {
     updateInterval(sampleIntervalMilliseconds + intervalStepMilliseconds)
   }
 
+  func interfaceDidOpen() {
+    guard !isInterfaceVisible else {
+      return
+    }
+
+    isInterfaceVisible = true
+    restart()
+  }
+
+  func interfaceDidClose() {
+    guard isInterfaceVisible else {
+      return
+    }
+
+    isInterfaceVisible = false
+    restart()
+  }
+
   func toggleMenuBarMetric(_ metric: MenuBarMetric) {
     if let index = selectedMenuBarMetrics.firstIndex(of: metric) {
       guard selectedMenuBarMetrics.count > 1 else {
@@ -130,14 +162,20 @@ final class MonitorStore {
       return
     }
 
+    let previousEffectiveInterval = effectiveIntervalMilliseconds
     sampleIntervalMilliseconds = nextInterval
     UserDefaults.standard.set(nextInterval, forKey: intervalPreferenceKey)
-    restart()
+
+    if effectiveIntervalMilliseconds != previousEffectiveInterval {
+      restart()
+    }
   }
 
   private func consumeSnapshots(generation: Int) async {
+    let intervalMilliseconds = effectiveIntervalMilliseconds
+
     do {
-      for try await nextSnapshot in client.snapshots(intervalMilliseconds: sampleIntervalMilliseconds) {
+      for try await nextSnapshot in client.snapshots(intervalMilliseconds: intervalMilliseconds) {
         apply(nextSnapshot)
       }
 
