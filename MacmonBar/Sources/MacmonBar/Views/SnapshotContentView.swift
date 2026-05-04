@@ -43,7 +43,16 @@ struct SnapshotContentView: View {
         )
       }
 
-      PowerStripView(snapshot: snapshot, history: history)
+      NetworkBlockView(snapshot: snapshot, history: history)
+
+      VStack(spacing: 0) {
+        PowerStripView(snapshot: snapshot, history: history)
+          .zIndex(1)
+
+        ProcessPowerChartView(processes: snapshot.processPower)
+          .padding(.horizontal, 16)
+          .padding(.top, -1)
+      }
     }
   }
 

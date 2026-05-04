@@ -1,6 +1,7 @@
 # Macmon Bar
 
-Macmon Bar is a native SwiftUI menu bar wrapper around the upstream [`macmon`](../macmon) sampler.
+Macmon Bar is a native SwiftUI menu bar wrapper around the bundled
+[`MacmonBarRuntime`](../MacmonBarRuntime) Rust sampler.
 
 For user-facing project documentation, release rules, signing, and GitHub
 publishing notes, see the root [README](../README.md) and
@@ -8,14 +9,15 @@ publishing notes, see the root [README](../README.md) and
 
 The repository is split deliberately:
 
-- `../macmon` is the upstream Rust project. Keep it clean so it can be updated with `git pull`.
+- `../MacmonBarRuntime` is the first-party Rust agent bundled in releases.
+- `../macmon` is the upstream Rust project reference. Keep it clean so it can be updated with `git pull`.
 - `MacmonBar` is the macOS app. It starts a continuous `macmon pipe --soc-info` JSON stream, updates the menu bar title on every sample, and renders live value-over-time charts in the popover.
 
 ## Requirements
 
 - macOS 14 or newer
 - Xcode 26 / Swift 6.2
-- Rust toolchain for building the upstream `macmon` binary
+- Rust toolchain for building the bundled runtime
 
 ## Development
 
@@ -25,7 +27,8 @@ make test
 make run
 ```
 
-`make run` sets `MACMON_BIN` to the sibling upstream checkout, so the app always uses the local source build.
+`make run` sets `MACMON_BIN` to `../MacmonBarRuntime/target/release/macmon`,
+so the app always uses the local source build.
 
 ## Build an app bundle
 
@@ -34,7 +37,8 @@ make app
 open dist/MacmonBar.app
 ```
 
-The packaging script builds both Swift and Rust release binaries, then bundles the `macmon` executable into:
+The packaging script builds both Swift and Rust release binaries, then bundles
+the runtime executable into:
 
 ```text
 dist/MacmonBar.app/Contents/Resources/bin/macmon
@@ -42,14 +46,19 @@ dist/MacmonBar.app/Contents/Resources/bin/macmon
 
 The app also supports `MACMON_BIN` and Homebrew locations as fallbacks, which keeps development and future packaging paths separate.
 
-## Updating upstream macmon
+## Updating Runtime From Upstream
 
 ```sh
 cd ../macmon
 git pull
+cd ../MacmonBarRuntime
+# port or cherry-pick the upstream changes intentionally
 cd ../MacmonBar
 make test
 make app
 ```
 
-If upstream changes the JSON format, update `Sources/MacmonBar/Models/MetricSnapshot.swift` first and keep a decoding test in `Tests/MacmonBarTests`.
+Keep Macmon Bar-specific runtime changes in `../MacmonBarRuntime`, not in the
+upstream reference submodule. If upstream changes the JSON format, update
+`Sources/MacmonBar/Models/MetricSnapshot.swift` first and keep a decoding test
+in `Tests/MacmonBarTests`.

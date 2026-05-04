@@ -41,8 +41,8 @@ Macmon Bar uses semantic versions: `MAJOR.MINOR.PATCH`.
   major architecture shifts, a major minimum macOS version change, or a product
   direction reset.
 
-`CFBundleVersion` is the build number. Increase it by 1 for every public
-release.
+`CFBundleVersion` is the build number. It increases by 1 for every successful
+app bundle build.
 
 The source of truth is:
 
@@ -51,7 +51,9 @@ MacmonBar/Support/Info.plist
 ```
 
 This repository is currently a Swift Package without a checked-in Xcode project,
-so `agvtool` cannot update build numbers here. Use the package script instead:
+so `agvtool` cannot update build numbers here. `make app` bumps the build
+number automatically after Swift and Rust compilation succeeds. For a manual
+bump without packaging, use:
 
 ```sh
 cd MacmonBar
@@ -83,7 +85,7 @@ make sign
 
 The script signs nested code first:
 
-1. `MacmonBar.app/Contents/Resources/bin/macmon`
+1. `MacmonBar.app/Contents/Resources/bin/macmon`, built from `MacmonBarRuntime/`
 2. `MacmonBar.app`
 
 It uses hardened runtime and timestamps.

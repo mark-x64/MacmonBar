@@ -35,6 +35,14 @@ enum MetricText {
     value.formatted(.byteCount(style: .memory))
   }
 
+  static func bytesPerSecond(_ value: Double) -> String {
+    guard value > 0 else {
+      return "0 B/s"
+    }
+
+    return "\(Int64(value).formatted(.byteCount(style: .file)))/s"
+  }
+
   static func chipLine(for snapshot: MetricSnapshot) -> String {
     guard let soc = snapshot.soc else {
       return "Apple Silicon"

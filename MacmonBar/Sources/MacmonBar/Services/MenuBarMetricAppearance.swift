@@ -14,6 +14,8 @@ extension MenuBarMetric {
       return .purple
     case .memory:
       return .orange
+    case .network:
+      return .green
     case .power:
       return .primary
     case .cpuPower:
@@ -35,6 +37,8 @@ extension MenuBarMetric {
       return .systemPurple
     case .memory:
       return .systemOrange
+    case .network:
+      return .systemGreen
     case .power:
       return .labelColor
     case .cpuPower:

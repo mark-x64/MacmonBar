@@ -55,7 +55,7 @@ private struct ReadmeDashboardScreenshotView: View {
       }
       .padding(24)
     }
-    .frame(width: 568, height: 540)
+    .frame(width: 568, height: 760)
     .environment(\.colorScheme, .dark)
   }
 
@@ -109,9 +109,15 @@ private struct ReadmeDashboardScreenshotView: View {
 
       Spacer()
 
-      Text("macmon")
-        .font(.caption)
-        .foregroundStyle(.secondary)
+      VStack(alignment: .trailing, spacing: 2) {
+        Text("Process power is estimated")
+          .font(.caption2)
+          .foregroundStyle(.tertiary)
+
+        Text("macmon")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      }
     }
   }
 }
@@ -124,6 +130,8 @@ private func makeScreenshotHistory() -> [MetricSnapshot] {
     let eCPU = 0.38 + 0.1 * cos(phase * 1.2)
     let gpu = 0.08 + 0.05 * sin(phase * 0.8)
     let power = 18 + 6 * sin(phase * 0.65)
+    let down = 420_000 + 260_000 * max(sin(phase * 1.3), 0)
+    let up = 86_000 + 72_000 * max(cos(phase * 0.9), 0)
 
     return MetricSnapshot(
       id: Date(timeIntervalSince1970: 1_800_000_000 + Double(index)),
@@ -137,6 +145,12 @@ private func makeScreenshotHistory() -> [MetricSnapshot] {
         swapTotal: 11 * 1_073_741_824,
         swapUsage: Int64(9.6 * 1_073_741_824)
       ),
+      network: NetworkMetrics(
+        downloadBytesPerSecond: down,
+        uploadBytesPerSecond: up,
+        receivedBytes: Int64(92 * 1_000_000_000 + index * 420_000),
+        transmittedBytes: Int64(18 * 1_000_000_000 + index * 86_000)
+      ),
       ecpuUsage: FrequencyUsage(frequencyMHz: 1840 + index % 420, utilizationRatio: eCPU),
       pcpuUsage: FrequencyUsage(frequencyMHz: 1900 + index % 500, utilizationRatio: pCPU),
       cpuUsageRatio: cpu,
@@ -148,6 +162,7 @@ private func makeScreenshotHistory() -> [MetricSnapshot] {
       sysPower: power,
       ramPower: 0.2,
       gpuRamPower: 0,
+      processPower: screenshotProcessPower,
       soc: SocInfo(
         macModel: "Mac16,5",
         chipName: "Apple M4 Max",
@@ -164,3 +179,11 @@ private func makeScreenshotHistory() -> [MetricSnapshot] {
     )
   }
 }
+
+private let screenshotProcessPower = [
+  ProcessPowerMetric(pid: 1240, name: "Xcode", estimatedPower: 0.74, cpuUsagePercent: 28.4),
+  ProcessPowerMetric(pid: 981, name: "Google Chrome Helper", estimatedPower: 0.52, cpuUsagePercent: 20.2),
+  ProcessPowerMetric(pid: 2215, name: "Simulator", estimatedPower: 0.31, cpuUsagePercent: 12.1),
+  ProcessPowerMetric(pid: 503, name: "WindowServer", estimatedPower: 0.26, cpuUsagePercent: 9.4),
+  ProcessPowerMetric(pid: 811, name: "codex", estimatedPower: 0.18, cpuUsagePercent: 6.2),
+]

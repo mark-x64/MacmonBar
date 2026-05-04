@@ -20,11 +20,26 @@ enum MenuBarGraphRenderer {
       }
 
       for metric in metrics {
-        draw(
-          values: metric.normalizedValues(from: sourceHistory).suffix(90),
-          color: metric.menuBarNSColor,
-          in: rect
-        )
+        if metric == .network {
+          let values = metric.normalizedNetworkValues(from: sourceHistory)
+          draw(
+            values: values.upload.suffix(SparklineLayout.visibleSampleCapacity),
+            color: .systemOrange,
+            in: rect
+          )
+          draw(
+            values: values.download.suffix(SparklineLayout.visibleSampleCapacity),
+            color: .systemGreen,
+            in: rect
+          )
+        } else {
+          draw(
+            values: metric.normalizedValues(from: sourceHistory)
+              .suffix(SparklineLayout.visibleSampleCapacity),
+            color: metric.menuBarNSColor,
+            in: rect
+          )
+        }
       }
 
       return true
@@ -62,7 +77,11 @@ enum MenuBarGraphRenderer {
 
     for (index, value) in values.enumerated() {
       let clampedValue = min(max(value, 0), 1)
-      let x = drawingRect.minX + drawingRect.width * Double(index) / Double(values.count - 1)
+      let x = drawingRect.minX + SparklineLayout.xPosition(
+        index: index,
+        visibleSampleCount: values.count,
+        width: drawingRect.width
+      )
       let y = drawingRect.maxY - drawingRect.height * clampedValue
       let point = CGPoint(x: x, y: y)
 

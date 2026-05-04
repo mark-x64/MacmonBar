@@ -1,9 +1,10 @@
 .PHONY: app build bump-build clean icon macmon notarize release run sign test zip
 
 SWIFT_ENV = CLANG_MODULE_CACHE_PATH="$(CURDIR)/.build/clang-module-cache"
+RUNTIME_DIR = $(CURDIR)/../MacmonBarRuntime
 
 macmon:
-	cd ../macmon && cargo build --release
+	cargo build --manifest-path "$(RUNTIME_DIR)/Cargo.toml" --release
 
 icon:
 	./Scripts/generate-app-icon.sh
@@ -21,7 +22,7 @@ test:
 	$(SWIFT_ENV) swift test
 
 run: macmon
-	$(SWIFT_ENV) MACMON_BIN="$(CURDIR)/../macmon/target/release/macmon" swift run MacmonBar
+	$(SWIFT_ENV) MACMON_BIN="$(RUNTIME_DIR)/target/release/macmon" swift run MacmonBar
 
 app:
 	./Scripts/package-app.sh

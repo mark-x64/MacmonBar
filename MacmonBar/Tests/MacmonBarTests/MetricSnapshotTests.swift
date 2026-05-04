@@ -17,6 +17,12 @@ func decodesMacmonPipeSnapshot() throws {
       "swap_total": 4294967296,
       "swap_usage": 2602434560
     },
+    "network": {
+      "download_bytes_per_second": 124576.0,
+      "upload_bytes_per_second": 48192.0,
+      "received_bytes": 912345678,
+      "transmitted_bytes": 123456789
+    },
     "ecpu_usage": [1181, 0.082656614],
     "pcpu_usage": [1974, 0.015181795],
     "cpu_usage_pct": 0.036854,
@@ -28,6 +34,14 @@ func decodesMacmonPipeSnapshot() throws {
     "sys_power": 5.876533,
     "ram_power": 0.11635789,
     "gpu_ram_power": 0.0009615385,
+    "process_power": [
+      {
+        "pid": 123,
+        "name": "Xcode",
+        "estimated_power": 0.145,
+        "cpu_usage_pct": 18.2
+      }
+    ],
     "soc": {
       "mac_model": "Mac15,6",
       "chip_name": "Apple M3 Pro",
@@ -51,6 +65,10 @@ func decodesMacmonPipeSnapshot() throws {
   #expect(snapshot.ecpuUsage.frequencyMHz == 1181)
   #expect(snapshot.gpuUsage.utilizationRatio == 0.021497859)
   #expect(snapshot.allPower == 0.22231553)
+  #expect(snapshot.network.downloadBytesPerSecond == 124576)
+  #expect(snapshot.network.transmittedBytes == 123456789)
+  #expect(snapshot.processPower.first?.name == "Xcode")
+  #expect(snapshot.processPower.first?.estimatedPower == 0.145)
 }
 
 @Test
@@ -84,10 +102,10 @@ func formatsMenuBarTextWithoutMetricLabels() {
     gpuRamPower: 0
   )
 
-  let metrics: [MenuBarMetric] = [.power, .pCPU, .eCPU]
+  let metrics: [MenuBarMetric] = [.power, .pCPU, .eCPU, .network]
 
-  #expect(metrics.compactText(for: snapshot, includeLabels: true) == "PWR 21.0W  P 13%  E 36%")
-  #expect(metrics.compactText(for: snapshot, includeLabels: false) == "21.0W  13%  36%")
+  #expect(metrics.compactText(for: snapshot, includeLabels: true) == "PWR 21.0W  P 13%  E 36%  NET 0 B/s / 0 B/s")
+  #expect(metrics.compactText(for: snapshot, includeLabels: false) == "21.0W  13%  36%  0 B/s / 0 B/s")
 }
 
 @Test

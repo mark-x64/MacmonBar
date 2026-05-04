@@ -29,8 +29,11 @@ struct MenuBarTextPresentationCard: View {
           .frame(maxWidth: .infinity, alignment: .center)
           .padding(.vertical, 8)
         }
+        .frame(maxWidth: .infinity, minHeight: 74, alignment: .topLeading)
+        .contentShape(.rect)
       }
       .buttonStyle(.plain)
+      .frame(maxWidth: .infinity)
 
       MenuBarTextLabelToggleView(
         isOn: store.showsMenuBarTextLabels,

@@ -330,7 +330,21 @@ final class MonitorStore {
       return [.power, .cpuTotal]
     }
 
-    let metrics = rawValues.compactMap(MenuBarMetric.init(rawValue:))
+    let metrics = rawValues.reduce(into: [MenuBarMetric]()) { result, rawValue in
+      let migratedMetrics: [MenuBarMetric]
+      if rawValue == "networkUpload" || rawValue == "networkDownload" {
+        migratedMetrics = [.network]
+      } else if let metric = MenuBarMetric(rawValue: rawValue) {
+        migratedMetrics = [metric]
+      } else {
+        migratedMetrics = []
+      }
+
+      for metric in migratedMetrics where !result.contains(metric) {
+        result.append(metric)
+      }
+    }
+
     return metrics.isEmpty ? [.power, .cpuTotal] : metrics
   }
 

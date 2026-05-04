@@ -9,7 +9,12 @@ struct RealtimeSparklineView: View {
       drawGrid(in: &context, size: size)
 
       for item in series {
-        draw(values: item.values.suffix(90), color: item.color, in: &context, size: size)
+        draw(
+          values: item.values.suffix(SparklineLayout.visibleSampleCapacity),
+          color: item.color,
+          in: &context,
+          size: size
+        )
       }
     }
     .accessibilityHidden(true)
@@ -41,7 +46,11 @@ struct RealtimeSparklineView: View {
     var path = Path()
 
     for (index, value) in values.enumerated() {
-      let x = size.width * Double(index) / Double(values.count - 1)
+      let x = SparklineLayout.xPosition(
+        index: index,
+        visibleSampleCount: values.count,
+        width: size.width
+      )
       let yRatio = 1 - min(max(value / maxValue, 0), 1)
       let point = CGPoint(x: x, y: size.height * yRatio)
 

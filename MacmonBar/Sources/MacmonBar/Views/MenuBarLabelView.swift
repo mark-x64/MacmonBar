@@ -19,28 +19,36 @@ struct MenuBarLabelView: View {
           .accessibilityHidden(true)
       }
 
-      if showsText {
-        Text(labelText)
-          .monospacedDigit()
-          .lineLimit(1)
-          .minimumScaleFactor(0.75)
-      }
-
-      if showsGraph {
-        Image(nsImage: MenuBarGraphRenderer.image(snapshot: snapshot, history: history, metrics: metrics))
+      if showsText || showsGraph {
+        Image(
+          nsImage: MenuBarLabelImageRenderer.image(
+            snapshot: snapshot,
+            history: history,
+            metrics: metrics,
+            showsText: showsText,
+            showsGraph: showsGraph,
+            showsLabels: showsTextLabels
+          )
+        )
           .interpolation(.high)
-          .frame(width: 46, height: 16)
-          .accessibilityHidden(true)
+          .accessibilityLabel(accessibilityLabel)
       }
     }
     .id(revision)
   }
 
-  private var labelText: String {
+  private var accessibilityLabel: String {
     guard let snapshot else {
       return "Macmon"
     }
 
-    return metrics.compactText(for: snapshot, includeLabels: showsTextLabels)
+    var parts: [String] = []
+    if showsText {
+      parts.append(metrics.compactText(for: snapshot, includeLabels: showsTextLabels))
+    }
+    if showsGraph {
+      parts.append("graph")
+    }
+    return parts.joined(separator: ", ")
   }
 }

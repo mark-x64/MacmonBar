@@ -29,11 +29,11 @@ struct MenuBarTextLabelToggleView: View {
   }
 
   private var backgroundStyle: Color {
-    isOn ? Color.green : Color.secondary.opacity(0.14)
+    isOn ? Color.secondary.opacity(0.18) : Color.secondary.opacity(0.14)
   }
 
   private var foregroundStyle: Color {
-    isOn ? .white : .secondary
+    isOn ? .primary : .secondary
   }
 
   private func toggle() {

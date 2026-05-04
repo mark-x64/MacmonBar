@@ -6,6 +6,7 @@ enum MenuBarMetric: String, CaseIterable, Identifiable, Sendable {
   case eCPU
   case gpu
   case memory
+  case network
   case power
   case cpuPower
   case gpuPower
@@ -26,6 +27,8 @@ enum MenuBarMetric: String, CaseIterable, Identifiable, Sendable {
       return "GPU"
     case .memory:
       return "Memory"
+    case .network:
+      return "Network"
     case .power:
       return "Power"
     case .cpuPower:
@@ -47,6 +50,8 @@ enum MenuBarMetric: String, CaseIterable, Identifiable, Sendable {
       return "GPU"
     case .memory:
       return "MEM"
+    case .network:
+      return "NET"
     case .power:
       return "PWR"
     case .cpuPower:

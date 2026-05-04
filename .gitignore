@@ -1,4 +1,5 @@
 .DS_Store
 MacmonBar/.build/
 MacmonBar/dist/
+MacmonBarRuntime/target/
 macmon/target/

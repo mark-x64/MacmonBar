@@ -15,16 +15,35 @@ struct MenuBarGraphPreviewView: View {
 
   private var series: [SparkSeries] {
     guard let snapshot else {
-      return metrics.map { SparkSeries(color: $0.menuBarColor, values: [0.5, 0.5]) }
+      return metrics.flatMap { metric in
+        if metric == .network {
+          return [
+            SparkSeries(color: .orange, values: [0.35, 0.35]),
+            SparkSeries(color: .green, values: [0.65, 0.65]),
+          ]
+        }
+
+        return [SparkSeries(color: metric.menuBarColor, values: [0.5, 0.5])]
+      }
     }
 
     let sourceHistory = history.isEmpty ? [snapshot] : history
 
-    return metrics.map { metric in
-      SparkSeries(
-        color: metric.menuBarColor,
-        values: metric.normalizedValues(from: sourceHistory)
-      )
+    return metrics.flatMap { metric in
+      if metric == .network {
+        let values = metric.normalizedNetworkValues(from: sourceHistory)
+        return [
+          SparkSeries(color: .orange, values: values.upload),
+          SparkSeries(color: .green, values: values.download),
+        ]
+      }
+
+      return [
+        SparkSeries(
+          color: metric.menuBarColor,
+          values: metric.normalizedValues(from: sourceHistory)
+        ),
+      ]
     }
   }
 }

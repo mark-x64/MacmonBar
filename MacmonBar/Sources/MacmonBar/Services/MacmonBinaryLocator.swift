@@ -23,6 +23,8 @@ struct MacmonBinaryLocator: Sendable {
     [
       bundledExecutableURL,
       environment["MACMON_BIN"].map { URL(fileURLWithPath: $0) },
+      currentDirectory.appending(path: "../MacmonBarRuntime/target/release/macmon"),
+      currentDirectory.appending(path: "MacmonBarRuntime/target/release/macmon"),
       currentDirectory.appending(path: "../macmon/target/release/macmon"),
       currentDirectory.appending(path: "macmon/target/release/macmon"),
       URL(fileURLWithPath: "/opt/homebrew/bin/macmon"),

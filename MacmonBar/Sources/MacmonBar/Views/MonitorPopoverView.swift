@@ -125,10 +125,19 @@ struct MonitorPopoverView: View {
 
       Spacer()
 
-      Text(appVersion.displayText)
-        .font(.caption)
-        .foregroundStyle(.secondary)
-        .monospacedDigit()
+      VStack(alignment: .trailing, spacing: 2) {
+        if page == .dashboard {
+          Text("Process power is estimated")
+            .font(.caption2)
+            .foregroundStyle(.tertiary)
+            .lineLimit(1)
+        }
+
+        Text(appVersion.displayText)
+          .font(.caption)
+          .foregroundStyle(.secondary)
+          .monospacedDigit()
+      }
     }
   }
 

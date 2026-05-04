@@ -5,6 +5,7 @@ struct MetricSnapshot: Decodable, Equatable, Identifiable, Sendable {
   let timestamp: String?
   let temp: TemperatureMetrics
   let memory: MemoryMetrics
+  let network: NetworkMetrics
   let ecpuUsage: FrequencyUsage
   let pcpuUsage: FrequencyUsage
   let cpuUsageRatio: Double
@@ -16,12 +17,14 @@ struct MetricSnapshot: Decodable, Equatable, Identifiable, Sendable {
   let sysPower: Double
   let ramPower: Double
   let gpuRamPower: Double
+  let processPower: [ProcessPowerMetric]
   let soc: SocInfo?
 
   enum CodingKeys: String, CodingKey {
     case timestamp
     case temp
     case memory
+    case network
     case ecpuUsage = "ecpu_usage"
     case pcpuUsage = "pcpu_usage"
     case cpuUsageRatio = "cpu_usage_pct"
@@ -33,6 +36,7 @@ struct MetricSnapshot: Decodable, Equatable, Identifiable, Sendable {
     case sysPower = "sys_power"
     case ramPower = "ram_power"
     case gpuRamPower = "gpu_ram_power"
+    case processPower = "process_power"
     case soc
   }
 
@@ -41,6 +45,7 @@ struct MetricSnapshot: Decodable, Equatable, Identifiable, Sendable {
     timestamp: String? = nil,
     temp: TemperatureMetrics,
     memory: MemoryMetrics,
+    network: NetworkMetrics = NetworkMetrics(),
     ecpuUsage: FrequencyUsage,
     pcpuUsage: FrequencyUsage,
     cpuUsageRatio: Double,
@@ -52,12 +57,14 @@ struct MetricSnapshot: Decodable, Equatable, Identifiable, Sendable {
     sysPower: Double,
     ramPower: Double,
     gpuRamPower: Double,
+    processPower: [ProcessPowerMetric] = [],
     soc: SocInfo? = nil
   ) {
     self.id = id
     self.timestamp = timestamp
     self.temp = temp
     self.memory = memory
+    self.network = network
     self.ecpuUsage = ecpuUsage
     self.pcpuUsage = pcpuUsage
     self.cpuUsageRatio = cpuUsageRatio
@@ -69,6 +76,7 @@ struct MetricSnapshot: Decodable, Equatable, Identifiable, Sendable {
     self.sysPower = sysPower
     self.ramPower = ramPower
     self.gpuRamPower = gpuRamPower
+    self.processPower = processPower
     self.soc = soc
   }
 
@@ -80,6 +88,7 @@ struct MetricSnapshot: Decodable, Equatable, Identifiable, Sendable {
     self.timestamp = timestamp
     self.temp = try container.decode(TemperatureMetrics.self, forKey: .temp)
     self.memory = try container.decode(MemoryMetrics.self, forKey: .memory)
+    self.network = try container.decodeIfPresent(NetworkMetrics.self, forKey: .network) ?? NetworkMetrics()
     self.ecpuUsage = try container.decode(FrequencyUsage.self, forKey: .ecpuUsage)
     self.pcpuUsage = try container.decode(FrequencyUsage.self, forKey: .pcpuUsage)
     self.cpuUsageRatio = try container.decode(Double.self, forKey: .cpuUsageRatio)
@@ -91,7 +100,26 @@ struct MetricSnapshot: Decodable, Equatable, Identifiable, Sendable {
     self.sysPower = try container.decode(Double.self, forKey: .sysPower)
     self.ramPower = try container.decode(Double.self, forKey: .ramPower)
     self.gpuRamPower = try container.decode(Double.self, forKey: .gpuRamPower)
+    self.processPower = try container.decodeIfPresent([ProcessPowerMetric].self, forKey: .processPower) ?? []
     self.soc = try container.decodeIfPresent(SocInfo.self, forKey: .soc)
+  }
+}
+
+struct ProcessPowerMetric: Decodable, Equatable, Identifiable, Sendable {
+  let pid: Int
+  let name: String
+  let estimatedPower: Double
+  let cpuUsagePercent: Double
+
+  var id: Int {
+    pid
+  }
+
+  enum CodingKeys: String, CodingKey {
+    case pid
+    case name
+    case estimatedPower = "estimated_power"
+    case cpuUsagePercent = "cpu_usage_pct"
   }
 }
 
@@ -132,6 +160,32 @@ struct MemoryMetrics: Decodable, Equatable, Sendable {
     case ramUsage = "ram_usage"
     case swapTotal = "swap_total"
     case swapUsage = "swap_usage"
+  }
+}
+
+struct NetworkMetrics: Decodable, Equatable, Sendable {
+  let downloadBytesPerSecond: Double
+  let uploadBytesPerSecond: Double
+  let receivedBytes: Int64
+  let transmittedBytes: Int64
+
+  init(
+    downloadBytesPerSecond: Double = 0,
+    uploadBytesPerSecond: Double = 0,
+    receivedBytes: Int64 = 0,
+    transmittedBytes: Int64 = 0
+  ) {
+    self.downloadBytesPerSecond = downloadBytesPerSecond
+    self.uploadBytesPerSecond = uploadBytesPerSecond
+    self.receivedBytes = receivedBytes
+    self.transmittedBytes = transmittedBytes
+  }
+
+  enum CodingKeys: String, CodingKey {
+    case downloadBytesPerSecond = "download_bytes_per_second"
+    case uploadBytesPerSecond = "upload_bytes_per_second"
+    case receivedBytes = "received_bytes"
+    case transmittedBytes = "transmitted_bytes"
   }
 }
 

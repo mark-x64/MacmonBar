@@ -13,6 +13,8 @@ extension MenuBarMetric {
       MetricText.compactPercent(snapshot.gpuUsage.utilizationRatio)
     case .memory:
       MetricText.compactPercent(snapshot.memory.ramUsageRatio)
+    case .network:
+      "\(MetricText.bytesPerSecond(snapshot.network.uploadBytesPerSecond)) / \(MetricText.bytesPerSecond(snapshot.network.downloadBytesPerSecond))"
     case .power:
       MetricText.compactWatts(snapshot.sysPower)
     case .cpuPower:
@@ -36,6 +38,8 @@ extension MenuBarMetric {
       return snapshot.gpuUsage.utilizationRatio
     case .memory:
       return snapshot.memory.ramUsageRatio
+    case .network:
+      return max(snapshot.network.uploadBytesPerSecond, snapshot.network.downloadBytesPerSecond)
     case .power:
       return snapshot.sysPower
     case .cpuPower:
@@ -51,10 +55,24 @@ extension MenuBarMetric {
     switch self {
     case .cpuTotal, .pCPU, .eCPU, .gpu, .memory:
       return values.map { min(max($0, 0), 1) }
-    case .power, .cpuPower, .gpuPower:
+    case .power, .cpuPower, .gpuPower, .network:
       let upperBound = max(values.max() ?? 0, 1)
       return values.map { min(max($0 / upperBound, 0), 1) }
     }
+  }
+
+  func normalizedNetworkValues(from history: [MetricSnapshot]) -> (upload: [Double], download: [Double]) {
+    let upperBound = max(
+      history
+        .flatMap { [$0.network.uploadBytesPerSecond, $0.network.downloadBytesPerSecond] }
+        .max() ?? 0,
+      1
+    )
+
+    return (
+      upload: history.map { min(max($0.network.uploadBytesPerSecond / upperBound, 0), 1) },
+      download: history.map { min(max($0.network.downloadBytesPerSecond / upperBound, 0), 1) }
+    )
   }
 }
 
