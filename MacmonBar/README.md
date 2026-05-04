@@ -1,6 +1,6 @@
-# MacmonBar
+# Macmon Bar
 
-MacmonBar is a native SwiftUI menu bar wrapper around the upstream [`macmon`](../macmon) sampler.
+Macmon Bar is a native SwiftUI menu bar wrapper around the upstream [`macmon`](../macmon) sampler.
 
 For user-facing project documentation, release rules, signing, and GitHub
 publishing notes, see the root [README](../README.md) and

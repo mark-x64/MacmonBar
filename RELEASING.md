@@ -1,4 +1,4 @@
-# Releasing MacmonBar
+# Releasing Macmon Bar
 
 This project ships outside the Mac App Store, so public releases should use a
 Developer ID Application certificate, Apple's notarization service, and a zip
@@ -31,7 +31,7 @@ Developer ID Application: Your Name (TEAMID)
 
 ## Version Bump Rules
 
-MacmonBar uses semantic versions: `MAJOR.MINOR.PATCH`.
+Macmon Bar uses semantic versions: `MAJOR.MINOR.PATCH`.
 
 - Patch: small fixes, visual polish, performance tweaks, dependency updates, or
   release-process fixes. Example: `0.1.0` -> `0.1.1`.

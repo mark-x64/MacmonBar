@@ -7,6 +7,7 @@ APP_NAME="MacmonBar"
 APP_DIR="$ROOT_DIR/dist/$APP_NAME.app"
 SWIFT_BINARY="$ROOT_DIR/.build/release/$APP_NAME"
 MACMON_BINARY="$WORKSPACE_DIR/macmon/target/release/macmon"
+APP_ICON="$ROOT_DIR/Resources/AppIcon.icns"
 LEGAL_DIR="$APP_DIR/Contents/Resources/Legal"
 
 export CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/clang-module-cache"
@@ -24,12 +25,19 @@ if [[ ! -x "$MACMON_BINARY" ]]; then
   exit 1
 fi
 
+if [[ ! -f "$APP_ICON" ]]; then
+  echo "Missing app icon: $APP_ICON" >&2
+  echo "Run: make icon" >&2
+  exit 1
+fi
+
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR/Contents/MacOS" "$APP_DIR/Contents/Resources/bin" "$LEGAL_DIR"
 
 cp "$ROOT_DIR/Support/Info.plist" "$APP_DIR/Contents/Info.plist"
 cp "$SWIFT_BINARY" "$APP_DIR/Contents/MacOS/$APP_NAME"
 cp "$MACMON_BINARY" "$APP_DIR/Contents/Resources/bin/macmon"
+cp "$APP_ICON" "$APP_DIR/Contents/Resources/AppIcon.icns"
 cp "$WORKSPACE_DIR/LICENSE" "$LEGAL_DIR/MacmonBar-LICENSE.txt"
 cp "$WORKSPACE_DIR/THIRD_PARTY_NOTICES.md" "$LEGAL_DIR/THIRD_PARTY_NOTICES.md"
 cp "$WORKSPACE_DIR/macmon/LICENSE" "$LEGAL_DIR/macmon-LICENSE.txt"

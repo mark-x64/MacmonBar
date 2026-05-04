@@ -1,10 +1,10 @@
-# MacmonBar
+# Macmon Bar
 
-MacmonBar is a native macOS menu bar monitor for Apple Silicon Macs. It wraps
+Macmon Bar is a native macOS menu bar monitor for Apple Silicon Macs. It wraps
 the open-source [`macmon`](https://github.com/vladkens/macmon) sampler and
 shows live CPU, GPU, memory, and power metrics directly in the menu bar.
 
-![MacmonBar dashboard](Docs/Images/macmonbar-dashboard.png)
+![Macmon Bar dashboard](Docs/Images/macmonbar-dashboard.png)
 
 ## Features
 
@@ -24,7 +24,7 @@ shows live CPU, GPU, memory, and power metrics directly in the menu bar.
 
 ## Install From a Release
 
-For the first GitHub release, MacmonBar will ship as a signed and notarized zip:
+For the first GitHub release, Macmon Bar will ship as a signed and notarized zip:
 
 ```text
 MacmonBar-0.1.0.zip
@@ -60,7 +60,7 @@ make app
 
 ## Release Versioning
 
-MacmonBar uses semantic versions: `MAJOR.MINOR.PATCH`.
+Macmon Bar uses semantic versions: `MAJOR.MINOR.PATCH`.
 
 - Patch: increment by 1 for small fixes, visual polish, performance tweaks,
   dependency updates, or release-process fixes that do not materially change the
@@ -88,7 +88,7 @@ Release signing is documented in [RELEASING.md](RELEASING.md). In short:
 
 ## License
 
-MacmonBar is released under the MIT License. See [LICENSE](LICENSE).
+Macmon Bar is released under the MIT License. See [LICENSE](LICENSE).
 
-MacmonBar bundles the upstream `macmon` binary, which is also licensed under
+Macmon Bar bundles the upstream `macmon` binary, which is also licensed under
 MIT. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

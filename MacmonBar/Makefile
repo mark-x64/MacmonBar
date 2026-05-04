@@ -1,9 +1,12 @@
-.PHONY: app build clean macmon notarize release run sign test zip
+.PHONY: app build clean icon macmon notarize release run sign test zip
 
 SWIFT_ENV = CLANG_MODULE_CACHE_PATH="$(CURDIR)/.build/clang-module-cache"
 
 macmon:
 	cd ../macmon && cargo build --release
+
+icon:
+	./Scripts/generate-app-icon.sh
 
 build:
 	$(SWIFT_ENV) swift build

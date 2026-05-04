@@ -6,12 +6,16 @@
   <string>en</string>
   <key>CFBundleExecutable</key>
   <string>MacmonBar</string>
+  <key>CFBundleDisplayName</key>
+  <string>Macmon Bar</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
   <key>CFBundleIdentifier</key>
   <string>com.markmorgan.macmonbar</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>
-  <string>MacmonBar</string>
+  <string>Macmon Bar</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
