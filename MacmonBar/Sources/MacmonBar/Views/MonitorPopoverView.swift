@@ -3,6 +3,7 @@ import SwiftUI
 struct MonitorPopoverView: View {
   let store: MonitorStore
   @State private var page: MonitorPopoverPage = .dashboard
+  private let appVersion = AppVersion.current
 
   var body: some View {
     TimelineView(.periodic(from: .now, by: 1)) { _ in
@@ -124,9 +125,10 @@ struct MonitorPopoverView: View {
 
       Spacer()
 
-      Text("macmon")
+      Text(appVersion.displayText)
         .font(.caption)
         .foregroundStyle(.secondary)
+        .monospacedDigit()
     }
   }
 

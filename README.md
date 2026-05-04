@@ -67,6 +67,7 @@ Development commands:
 
 ```sh
 make test
+make bump-build
 make run
 make app
 ```

@@ -1,4 +1,4 @@
-.PHONY: app build clean icon macmon notarize release run sign test zip
+.PHONY: app build bump-build clean icon macmon notarize release run sign test zip
 
 SWIFT_ENV = CLANG_MODULE_CACHE_PATH="$(CURDIR)/.build/clang-module-cache"
 
@@ -10,6 +10,9 @@ icon:
 
 build:
 	$(SWIFT_ENV) swift build
+
+bump-build:
+	./Scripts/bump-build-number.sh
 
 release:
 	$(SWIFT_ENV) swift build -c release

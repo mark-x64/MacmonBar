@@ -50,6 +50,14 @@ The source of truth is:
 MacmonBar/Support/Info.plist
 ```
 
+This repository is currently a Swift Package without a checked-in Xcode project,
+so `agvtool` cannot update build numbers here. Use the package script instead:
+
+```sh
+cd MacmonBar
+make bump-build
+```
+
 ## Build
 
 ```sh
