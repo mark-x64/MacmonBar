@@ -51,8 +51,8 @@ Download the zip from GitHub Releases, unzip it, and move `MacmonBar.app` to
 Clone with submodules:
 
 ```sh
-git clone --recurse-submodules <repo-url>
-cd Macmon
+git clone --recurse-submodules https://github.com/mark-x64/MacmonBar.git
+cd MacmonBar
 ```
 
 Build and run the app:
