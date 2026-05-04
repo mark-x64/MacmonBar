@@ -8,7 +8,7 @@ final class MonitorStore {
   private let historyLimit = 90
   private let intervalPreferenceKey = "sampleIntervalMilliseconds"
   private let minimumIntervalMilliseconds = 500
-  private let backgroundIntervalMilliseconds = 1_000
+  private let minimumMenuBarIntervalMilliseconds = 1_000
   private let maximumIntervalMilliseconds = 10_000
   private let intervalStepMilliseconds = 250
   private let legacyMenuBarStylePreferenceKey = "menuBarDisplayStyle"
@@ -16,7 +16,6 @@ final class MonitorStore {
   private let menuBarShowsGraphPreferenceKey = "menuBarShowsGraph"
   private let menuBarTextShowsLabelsPreferenceKey = "menuBarTextShowsLabels"
   private let menuBarMetricsPreferenceKey = "menuBarMetrics"
-  private let minimumPublishInterval: TimeInterval = 1
   private var streamTask: Task<Void, Never>?
   private var snapshotSession: MacmonSnapshotSession?
   private var streamGeneration = 0
@@ -79,12 +78,28 @@ final class MonitorStore {
   }
 
   private var effectiveIntervalMilliseconds: Int {
-    isInterfaceVisible ? sampleIntervalMilliseconds : backgroundIntervalMilliseconds
+    Self.resolvedIntervalMilliseconds(
+      sampleIntervalMilliseconds: sampleIntervalMilliseconds,
+      isInterfaceVisible: isInterfaceVisible,
+      minimumMenuBarIntervalMilliseconds: minimumMenuBarIntervalMilliseconds
+    )
   }
 
   private static func intervalTitle(for intervalMilliseconds: Int) -> String {
     let seconds = Double(intervalMilliseconds) / 1_000
     return "\(seconds.formatted(.number.precision(.fractionLength(seconds < 1 ? 2 : 1))))s"
+  }
+
+  nonisolated static func resolvedIntervalMilliseconds(
+    sampleIntervalMilliseconds: Int,
+    isInterfaceVisible: Bool,
+    minimumMenuBarIntervalMilliseconds: Int
+  ) -> Int {
+    if isInterfaceVisible {
+      return sampleIntervalMilliseconds
+    }
+
+    return max(sampleIntervalMilliseconds, minimumMenuBarIntervalMilliseconds)
   }
 
   var canDecreaseInterval: Bool {
@@ -257,6 +272,9 @@ final class MonitorStore {
     }
 
     let now = Date.now
+    let minimumPublishInterval = isInterfaceVisible
+      ? 0
+      : TimeInterval(minimumMenuBarIntervalMilliseconds) / 1_000
     let shouldPublish = snapshot == nil || now.timeIntervalSince(lastPublishDate) >= minimumPublishInterval
 
     guard shouldPublish else {

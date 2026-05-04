@@ -89,3 +89,46 @@ func formatsMenuBarTextWithoutMetricLabels() {
   #expect(metrics.compactText(for: snapshot, includeLabels: true) == "PWR 21.0W  P 13%  E 36%")
   #expect(metrics.compactText(for: snapshot, includeLabels: false) == "21.0W  13%  36%")
 }
+
+@Test
+func menuBarIntervalFollowsDashboardSelectionWithOneSecondMinimum() {
+  #expect(
+    MonitorStore.resolvedIntervalMilliseconds(
+      sampleIntervalMilliseconds: 500,
+      isInterfaceVisible: false,
+      minimumMenuBarIntervalMilliseconds: 1_000
+    ) == 1_000
+  )
+  #expect(
+    MonitorStore.resolvedIntervalMilliseconds(
+      sampleIntervalMilliseconds: 750,
+      isInterfaceVisible: false,
+      minimumMenuBarIntervalMilliseconds: 1_000
+    ) == 1_000
+  )
+  #expect(
+    MonitorStore.resolvedIntervalMilliseconds(
+      sampleIntervalMilliseconds: 2_000,
+      isInterfaceVisible: false,
+      minimumMenuBarIntervalMilliseconds: 1_000
+    ) == 2_000
+  )
+}
+
+@Test
+func dashboardIntervalUsesExactSelectionWhenVisible() {
+  #expect(
+    MonitorStore.resolvedIntervalMilliseconds(
+      sampleIntervalMilliseconds: 500,
+      isInterfaceVisible: true,
+      minimumMenuBarIntervalMilliseconds: 1_000
+    ) == 500
+  )
+  #expect(
+    MonitorStore.resolvedIntervalMilliseconds(
+      sampleIntervalMilliseconds: 2_000,
+      isInterfaceVisible: true,
+      minimumMenuBarIntervalMilliseconds: 1_000
+    ) == 2_000
+  )
+}
