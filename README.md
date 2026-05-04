@@ -4,9 +4,7 @@ Macmon Bar is a native macOS menu bar monitor for Apple Silicon Macs. It wraps
 the open-source [`macmon`](https://github.com/vladkens/macmon) sampler and
 shows live CPU, GPU, memory, and power metrics directly in the menu bar.
 
-<p>
-  <img src="Docs/Images/macmonbar-menubar.png" alt="Macmon Bar menu bar power readout" width="172">
-</p>
+![Macmon Bar live popover](Docs/Images/macmonbar-dashboard.png)
 
 ## Features
 
@@ -22,9 +20,11 @@ shows live CPU, GPU, memory, and power metrics directly in the menu bar.
 
 ## Screenshots
 
-### Popover
+### Menu Bar
 
-![Macmon Bar live popover](Docs/Images/macmonbar-dashboard.png)
+<p>
+  <img src="Docs/Images/macmonbar-menubar.png" alt="Macmon Bar menu bar power readout" width="172">
+</p>
 
 ### Settings
 
@@ -40,7 +40,7 @@ shows live CPU, GPU, memory, and power metrics directly in the menu bar.
 For the first GitHub release, Macmon Bar will ship as a signed and notarized zip:
 
 ```text
-MacmonBar-0.1.0.zip
+MacmonBar-1.0.0.zip
 ```
 
 Download the zip from GitHub Releases, unzip it, and move `MacmonBar.app` to
@@ -77,9 +77,9 @@ Macmon Bar uses semantic versions: `MAJOR.MINOR.PATCH`.
 
 - Patch: increment by 1 for small fixes, visual polish, performance tweaks,
   dependency updates, or release-process fixes that do not materially change the
-  product surface. Example: `0.1.0` -> `0.1.1`.
+  product surface. Example: `1.0.0` -> `1.0.1`.
 - Minor: increment for larger UI changes, new settings, new visible metrics, or
-  meaningful feature additions. Reset patch to 0. Example: `0.1.3` -> `0.2.0`.
+  meaningful feature additions. Reset patch to 0. Example: `1.0.3` -> `1.1.0`.
 - Major: increment only after explicit maintainer confirmation. Use this for
   breaking changes, major architecture changes, a major minimum macOS version
   change, or a product direction reset.

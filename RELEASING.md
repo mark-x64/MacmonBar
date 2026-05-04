@@ -34,9 +34,9 @@ Developer ID Application: Your Name (TEAMID)
 Macmon Bar uses semantic versions: `MAJOR.MINOR.PATCH`.
 
 - Patch: small fixes, visual polish, performance tweaks, dependency updates, or
-  release-process fixes. Example: `0.1.0` -> `0.1.1`.
+  release-process fixes. Example: `1.0.0` -> `1.0.1`.
 - Minor: larger UI changes, new settings, new visible metrics, or meaningful
-  feature additions. Reset patch to 0. Example: `0.1.3` -> `0.2.0`.
+  feature additions. Reset patch to 0. Example: `1.0.3` -> `1.1.0`.
 - Major: only after explicit maintainer confirmation. Use for breaking changes,
   major architecture shifts, a major minimum macOS version change, or a product
   direction reset.
@@ -106,8 +106,8 @@ Unsigned zips are not suitable for public GitHub releases.
 1. Tag the release:
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 2. Create a GitHub Release from the tag.
