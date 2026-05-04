@@ -2,6 +2,10 @@
 
 MacmonBar is a native SwiftUI menu bar wrapper around the upstream [`macmon`](../macmon) sampler.
 
+For user-facing project documentation, release rules, signing, and GitHub
+publishing notes, see the root [README](../README.md) and
+[RELEASING](../RELEASING.md) documents.
+
 The repository is split deliberately:
 
 - `../macmon` is the upstream Rust project. Keep it clean so it can be updated with `git pull`.

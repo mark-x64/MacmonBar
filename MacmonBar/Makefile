@@ -1,4 +1,4 @@
-.PHONY: app build clean macmon release run test
+.PHONY: app build clean macmon notarize release run sign test zip
 
 SWIFT_ENV = CLANG_MODULE_CACHE_PATH="$(CURDIR)/.build/clang-module-cache"
 
@@ -19,6 +19,15 @@ run: macmon
 
 app:
 	./Scripts/package-app.sh
+
+sign: app
+	./Scripts/sign-app.sh
+
+notarize: sign
+	./Scripts/notarize-app.sh
+
+zip: app
+	./Scripts/create-zip.sh
 
 clean:
 	swift package clean
