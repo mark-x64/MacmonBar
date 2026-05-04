@@ -4,18 +4,31 @@ Macmon Bar is a native macOS menu bar monitor for Apple Silicon Macs. It wraps
 the open-source [`macmon`](https://github.com/vladkens/macmon) sampler and
 shows live CPU, GPU, memory, and power metrics directly in the menu bar.
 
-![Macmon Bar dashboard](Docs/Images/macmonbar-dashboard.png)
+<p>
+  <img src="Docs/Images/macmonbar-menubar.png" alt="Macmon Bar menu bar power readout" width="172">
+</p>
 
 ## Features
 
-- Live menu bar text and graph display
+- Live menu bar text, graph, or combined text-plus-graph display
 - Configurable menu bar metrics: CPU total, P-CPU, E-CPU, GPU, memory, power,
   CPU power, and GPU power
+- Live settings previews for menu bar display styles
 - Compact value-over-time charts in the popover
 - Sampling interval controls with immediate feedback
 - Background sampling at 1s, with faster sampling available while the popover
   is open
 - Bundled `macmon` binary, so users do not need to install a separate CLI
+
+## Screenshots
+
+### Popover
+
+![Macmon Bar live popover](Docs/Images/macmonbar-dashboard.png)
+
+### Settings
+
+![Macmon Bar menu bar display settings](Docs/Images/macmonbar-settings.png)
 
 ## Requirements
 
