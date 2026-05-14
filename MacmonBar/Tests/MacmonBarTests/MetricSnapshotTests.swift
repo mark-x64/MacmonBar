@@ -150,3 +150,16 @@ func dashboardIntervalUsesExactSelectionWhenVisible() {
     ) == 2_000
   )
 }
+
+@Test
+func macmonArgumentsOnlyEnableProcessPowerWhenRequested() {
+  #expect(
+    MacmonProcessClient.arguments(intervalMilliseconds: 1_000, includesProcessPower: true)
+      == ["--interval", "1000", "pipe", "--soc-info"]
+  )
+
+  #expect(
+    MacmonProcessClient.arguments(intervalMilliseconds: 1_000, includesProcessPower: false)
+      == ["--interval", "1000", "pipe", "--soc-info", "--no-process-power"]
+  )
+}

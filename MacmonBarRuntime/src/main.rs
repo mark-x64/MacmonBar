@@ -1,5 +1,5 @@
 use clap::{CommandFactory, Parser, Subcommand, parser::ValueSource};
-use macmon::{App, Sampler, debug};
+use macmon::{App, Sampler, SamplerOptions, debug};
 use std::error::Error;
 use std::sync::{Arc, RwLock};
 use std::thread;
@@ -18,6 +18,10 @@ enum Commands {
     /// Include SoC information in the output
     #[arg(long, default_value_t = false)]
     soc_info: bool,
+
+    /// Skip per-process power estimation to reduce sampling overhead
+    #[arg(long, default_value_t = false)]
+    no_process_power: bool,
   },
 
   /// Serve metrics over HTTP (JSON at /json, Prometheus at /metrics)
@@ -33,6 +37,10 @@ enum Commands {
     /// Uninstall the launchd service
     #[arg(long, default_value_t = false)]
     uninstall: bool,
+
+    /// Skip per-process power estimation to reduce sampling overhead
+    #[arg(long, default_value_t = false)]
+    no_process_power: bool,
   },
 
   /// Print debug information
@@ -56,14 +64,15 @@ fn main() -> Result<(), Box<dyn Error>> {
   let args = Cli::parse();
 
   match &args.command {
-    Some(Commands::Pipe { samples, soc_info }) => {
+    Some(Commands::Pipe { samples, soc_info, no_process_power }) => {
       let mut sampler = Sampler::new()?;
       let mut counter = 0u32;
+      let sampler_options = SamplerOptions { process_power: !*no_process_power };
 
       let soc_info_val = if *soc_info { Some(sampler.get_soc_info().clone()) } else { None };
 
       loop {
-        let doc = sampler.get_metrics(args.interval.max(100))?;
+        let doc = sampler.get_metrics_with_options(args.interval.max(100), sampler_options)?;
 
         let mut doc = serde_json::to_value(&doc)?;
         if let Some(ref soc) = soc_info_val {
@@ -80,12 +89,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
       }
     }
-    Some(Commands::Serve { port, install, uninstall }) => {
+    Some(Commands::Serve { port, install, uninstall, no_process_power }) => {
       if *install || *uninstall {
         serve::launchd(*port, *install)?;
         return Ok(());
       }
       let mut sampler = Sampler::new()?;
+      let sampler_options = SamplerOptions { process_power: !*no_process_power };
       let soc = Arc::new(sampler.get_soc_info().clone());
       let shared: serve::SharedMetrics = Arc::new(RwLock::new(None));
 
@@ -99,7 +109,7 @@ fn main() -> Result<(), Box<dyn Error>> {
       });
 
       loop {
-        match sampler.get_metrics(args.interval.max(100)) {
+        match sampler.get_metrics_with_options(args.interval.max(100), sampler_options) {
           Ok(m) => *shared.write().unwrap() = Some(m),
           Err(e) => eprintln!("sampling error: {e}"),
         }

@@ -7,7 +7,10 @@ struct MacmonProcessClient: Sendable {
     self.locator = locator
   }
 
-  func startSnapshots(intervalMilliseconds: Int) -> MacmonSnapshotSession {
+  func startSnapshots(
+    intervalMilliseconds: Int,
+    includesProcessPower: Bool = true
+  ) -> MacmonSnapshotSession {
     let session = ProcessSession()
     let stream = AsyncThrowingStream<MetricSnapshot, Error> { continuation in
 
@@ -15,12 +18,10 @@ struct MacmonProcessClient: Sendable {
         let executableURL = try locator.resolve()
         let process = Process()
         process.executableURL = executableURL
-        process.arguments = [
-          "--interval",
-          "\(intervalMilliseconds)",
-          "pipe",
-          "--soc-info",
-        ]
+        process.arguments = Self.arguments(
+          intervalMilliseconds: intervalMilliseconds,
+          includesProcessPower: includesProcessPower
+        )
 
         let stdout = Pipe()
         let stderr = Pipe()
@@ -85,8 +86,29 @@ struct MacmonSnapshotSession: Sendable {
 }
 
 extension MacmonProcessClient {
-  func snapshots(intervalMilliseconds: Int) -> AsyncThrowingStream<MetricSnapshot, Error> {
-    startSnapshots(intervalMilliseconds: intervalMilliseconds).stream
+  static func arguments(intervalMilliseconds: Int, includesProcessPower: Bool) -> [String] {
+    var arguments = [
+      "--interval",
+      "\(intervalMilliseconds)",
+      "pipe",
+      "--soc-info",
+    ]
+
+    if !includesProcessPower {
+      arguments.append("--no-process-power")
+    }
+
+    return arguments
+  }
+
+  func snapshots(
+    intervalMilliseconds: Int,
+    includesProcessPower: Bool = true
+  ) -> AsyncThrowingStream<MetricSnapshot, Error> {
+    startSnapshots(
+      intervalMilliseconds: intervalMilliseconds,
+      includesProcessPower: includesProcessPower
+    ).stream
   }
 }
 

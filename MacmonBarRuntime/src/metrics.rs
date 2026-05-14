@@ -64,6 +64,17 @@ pub struct ProcessPowerMetric {
   pub cpu_usage_pct: f32,   // Activity Monitor style, where one full core is 100%
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct SamplerOptions {
+  pub process_power: bool,
+}
+
+impl Default for SamplerOptions {
+  fn default() -> Self {
+    Self { process_power: true }
+  }
+}
+
 #[derive(Clone, Debug)]
 struct ProcessSample {
   start_time: u64,
@@ -639,6 +650,14 @@ impl Sampler {
   }
 
   pub fn get_metrics(&mut self, duration: u32) -> WithError<Metrics> {
+    self.get_metrics_with_options(duration, SamplerOptions::default())
+  }
+
+  pub fn get_metrics_with_options(
+    &mut self,
+    duration: u32,
+    options: SamplerOptions,
+  ) -> WithError<Metrics> {
     let measures: usize = 4;
     let mut results: Vec<Metrics> = Vec::with_capacity(measures);
 
@@ -721,7 +740,9 @@ impl Sampler {
     rs.ram_power = zero_div(results.iter().map(|x| x.ram_power).sum(), measures as _);
     rs.gpu_ram_power = zero_div(results.iter().map(|x| x.gpu_ram_power).sum(), measures as _);
     rs.all_power = rs.cpu_power + rs.gpu_power + rs.ane_power;
-    rs.process_power = self.process_power.top_processes(rs.cpu_power);
+    if options.process_power {
+      rs.process_power = self.process_power.top_processes(rs.cpu_power);
+    }
 
     rs.memory = self.get_mem()?;
     rs.network = self.network.metrics();

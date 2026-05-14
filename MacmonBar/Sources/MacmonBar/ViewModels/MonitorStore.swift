@@ -235,7 +235,10 @@ final class MonitorStore {
 
   private func consumeSnapshots(generation: Int) async {
     let intervalMilliseconds = effectiveIntervalMilliseconds
-    let session = client.startSnapshots(intervalMilliseconds: intervalMilliseconds)
+    let session = client.startSnapshots(
+      intervalMilliseconds: intervalMilliseconds,
+      includesProcessPower: isInterfaceVisible
+    )
     snapshotSession = session
 
     do {
