@@ -55,24 +55,35 @@ struct MenuBarSettingsView: View {
       .padding(10)
       .background(.quaternary.opacity(0.45), in: .rect(cornerRadius: 8))
 
-      VStack(alignment: .leading, spacing: 8) {
-        Text("Dashboard")
+      HStack(spacing: 8) {
+        dashboardSection
+          .frame(maxWidth: .infinity)
+
+        Color.clear
+          .frame(maxWidth: .infinity)
+          .accessibilityHidden(true)
+      }
+    }
+  }
+
+  private var dashboardSection: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text("Dashboard")
+        .font(.caption)
+        .fontWeight(.semibold)
+        .foregroundStyle(.secondary)
+
+      Toggle(isOn: $store.showsProcessPowerRanking) {
+        Text("Process power ranking")
           .font(.caption)
           .fontWeight(.semibold)
-          .foregroundStyle(.secondary)
-
-        Toggle(isOn: $store.showsProcessPowerRanking) {
-          Text("Process power ranking")
-            .font(.caption)
-            .fontWeight(.semibold)
-        }
-        .toggleStyle(.switch)
-        .controlSize(.small)
-        .help("Rank process power while the panel is open")
       }
-      .padding(10)
-      .background(.quaternary.opacity(0.45), in: .rect(cornerRadius: 8))
+      .toggleStyle(.switch)
+      .controlSize(.small)
+      .help("Rank process power while the panel is open")
     }
+    .padding(10)
+    .background(.quaternary.opacity(0.45), in: .rect(cornerRadius: 8))
   }
 
   private var metricGrid: some View {
