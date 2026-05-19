@@ -17,11 +17,9 @@ struct IntervalControlView: View {
       )
 
       Text(intervalTitle)
-        .font(.caption)
+        .font(.callout)
         .foregroundStyle(.secondary)
-        .monospacedDigit()
-        .frame(width: 36)
-        .contentTransition(.numericText())
+        .frame(width: 42)
         .animation(.snappy(duration: 0.18), value: intervalTitle)
 
       IntervalStepButton(

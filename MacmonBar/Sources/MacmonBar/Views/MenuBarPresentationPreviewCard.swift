@@ -37,7 +37,9 @@ struct MenuBarPresentationPreviewCard<Preview: View>: View {
 
         Spacer(minLength: 0)
 
-        preview
+        MenuBarPreviewFitView {
+          preview
+        }
           .frame(maxWidth: .infinity, alignment: .center)
 
         Spacer(minLength: 0)

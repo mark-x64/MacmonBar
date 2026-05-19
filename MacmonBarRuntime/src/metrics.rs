@@ -67,11 +67,12 @@ pub struct ProcessPowerMetric {
 #[derive(Clone, Copy, Debug)]
 pub struct SamplerOptions {
   pub process_power: bool,
+  pub io_report_samples: usize,
 }
 
 impl Default for SamplerOptions {
   fn default() -> Self {
-    Self { process_power: true }
+    Self { process_power: true, io_report_samples: 4 }
   }
 }
 
@@ -658,7 +659,7 @@ impl Sampler {
     duration: u32,
     options: SamplerOptions,
   ) -> WithError<Metrics> {
-    let measures: usize = 4;
+    let measures = options.io_report_samples.clamp(1, 32);
     let mut results: Vec<Metrics> = Vec::with_capacity(measures);
 
     // CPU Stats channel naming by chip family (see: https://github.com/vladkens/macmon/issues/47)

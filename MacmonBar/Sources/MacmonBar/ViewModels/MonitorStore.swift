@@ -11,19 +11,24 @@ final class MonitorStore {
   private let minimumMenuBarIntervalMilliseconds = 1_000
   private let maximumIntervalMilliseconds = 10_000
   private let intervalStepMilliseconds = 250
+  private let visibleIOReportSamples = 4
+  private let backgroundIOReportSamples = 1
   private let legacyMenuBarStylePreferenceKey = "menuBarDisplayStyle"
   private let menuBarShowsTextPreferenceKey = "menuBarShowsText"
   private let menuBarShowsGraphPreferenceKey = "menuBarShowsGraph"
   private let menuBarTextShowsLabelsPreferenceKey = "menuBarTextShowsLabels"
   private let menuBarMetricsPreferenceKey = "menuBarMetrics"
+  private let menuBarMetricOrderPreferenceKey = "menuBarMetricOrder"
+  private let processPowerRankingPreferenceKey = "processPowerRankingEnabled"
+  private static let defaultMenuBarMetrics: [MenuBarMetric] = [.power, .cpuTotal]
   private var streamTask: Task<Void, Never>?
   private var snapshotSession: MacmonSnapshotSession?
   private var streamGeneration = 0
   @ObservationIgnored private var historyBuffer: [MetricSnapshot] = []
   @ObservationIgnored private var lastPublishDate = Date.distantPast
-  @ObservationIgnored private var isInterfaceVisible = false
 
   var sampleIntervalMilliseconds: Int
+  private(set) var isInterfaceVisible = false
   var showsMenuBarText: Bool {
     didSet {
       UserDefaults.standard.set(showsMenuBarText, forKey: menuBarShowsTextPreferenceKey)
@@ -45,7 +50,18 @@ final class MonitorStore {
     }
   }
 
-  var selectedMenuBarMetrics: [MenuBarMetric] {
+  var showsProcessPowerRanking: Bool {
+    didSet {
+      UserDefaults.standard.set(showsProcessPowerRanking, forKey: processPowerRankingPreferenceKey)
+      revision += 1
+
+      if oldValue != showsProcessPowerRanking, isInterfaceVisible {
+        restartImmediately()
+      }
+    }
+  }
+
+  private var selectedMenuBarMetricSet: Set<MenuBarMetric> {
     didSet {
       UserDefaults.standard.set(
         selectedMenuBarMetrics.map(\.rawValue),
@@ -53,6 +69,23 @@ final class MonitorStore {
       )
       revision += 1
     }
+  }
+
+  private(set) var menuBarMetricOrder: [MenuBarMetric] {
+    didSet {
+      UserDefaults.standard.set(
+        menuBarMetricOrder.map(\.rawValue),
+        forKey: menuBarMetricOrderPreferenceKey
+      )
+      revision += 1
+    }
+  }
+
+  var selectedMenuBarMetrics: [MenuBarMetric] {
+    MenuBarMetric.orderedMenuBarSelection(
+      Array(selectedMenuBarMetricSet),
+      order: menuBarMetricOrder
+    )
   }
 
   var snapshot: MetricSnapshot?
@@ -85,6 +118,13 @@ final class MonitorStore {
     )
   }
 
+  private var effectiveIncludesProcessPower: Bool {
+    Self.resolvedIncludesProcessPower(
+      isInterfaceVisible: isInterfaceVisible,
+      showsProcessPowerRanking: showsProcessPowerRanking
+    )
+  }
+
   private static func intervalTitle(for intervalMilliseconds: Int) -> String {
     let seconds = Double(intervalMilliseconds) / 1_000
     return "\(seconds.formatted(.number.precision(.fractionLength(seconds < 1 ? 2 : 1))))s"
@@ -100,6 +140,13 @@ final class MonitorStore {
     }
 
     return max(sampleIntervalMilliseconds, minimumMenuBarIntervalMilliseconds)
+  }
+
+  nonisolated static func resolvedIncludesProcessPower(
+    isInterfaceVisible: Bool,
+    showsProcessPowerRanking: Bool
+  ) -> Bool {
+    isInterfaceVisible && showsProcessPowerRanking
   }
 
   var canDecreaseInterval: Bool {
@@ -125,7 +172,9 @@ final class MonitorStore {
     self.showsMenuBarText = presentation.showsText
     self.showsMenuBarGraph = presentation.showsGraph
     self.showsMenuBarTextLabels = Self.loadMenuBarTextShowsLabels(key: menuBarTextShowsLabelsPreferenceKey)
-    self.selectedMenuBarMetrics = Self.loadMenuBarMetrics(key: menuBarMetricsPreferenceKey)
+    self.showsProcessPowerRanking = Self.loadProcessPowerRanking(key: processPowerRankingPreferenceKey)
+    self.menuBarMetricOrder = Self.loadMenuBarMetricOrder(key: menuBarMetricOrderPreferenceKey)
+    self.selectedMenuBarMetricSet = Set(Self.loadMenuBarMetrics(key: menuBarMetricsPreferenceKey))
   }
 
   func start() {
@@ -182,19 +231,44 @@ final class MonitorStore {
   }
 
   func toggleMenuBarMetric(_ metric: MenuBarMetric) {
-    if let index = selectedMenuBarMetrics.firstIndex(of: metric) {
-      guard selectedMenuBarMetrics.count > 1 else {
+    if selectedMenuBarMetricSet.contains(metric) {
+      guard selectedMenuBarMetricSet.count > 1 else {
         return
       }
 
-      selectedMenuBarMetrics.remove(at: index)
+      selectedMenuBarMetricSet.remove(metric)
     } else {
-      selectedMenuBarMetrics.append(metric)
+      selectedMenuBarMetricSet.insert(metric)
     }
   }
 
   func isMenuBarMetricSelected(_ metric: MenuBarMetric) -> Bool {
-    selectedMenuBarMetrics.contains(metric)
+    selectedMenuBarMetricSet.contains(metric)
+  }
+
+  func moveMenuBarMetric(_ metric: MenuBarMetric, to target: MenuBarMetric) {
+    guard metric != target,
+          let sourceIndex = menuBarMetricOrder.firstIndex(of: metric),
+          let targetIndex = menuBarMetricOrder.firstIndex(of: target)
+    else {
+      return
+    }
+
+    var nextOrder = menuBarMetricOrder
+    let movedMetric = nextOrder.remove(at: sourceIndex)
+    nextOrder.insert(movedMetric, at: targetIndex)
+    menuBarMetricOrder = MenuBarMetric.normalizedMenuBarOrder(nextOrder)
+  }
+
+  func moveMenuBarMetric(_ metric: MenuBarMetric, toIndex targetIndex: Int) {
+    guard let sourceIndex = menuBarMetricOrder.firstIndex(of: metric) else {
+      return
+    }
+
+    var nextOrder = menuBarMetricOrder
+    let movedMetric = nextOrder.remove(at: sourceIndex)
+    nextOrder.insert(movedMetric, at: targetIndex.clamped(to: 0...nextOrder.count))
+    menuBarMetricOrder = MenuBarMetric.normalizedMenuBarOrder(nextOrder)
   }
 
   func toggleMenuBarPresentation(_ presentation: MenuBarPresentationKind) {
@@ -237,7 +311,8 @@ final class MonitorStore {
     let intervalMilliseconds = effectiveIntervalMilliseconds
     let session = client.startSnapshots(
       intervalMilliseconds: intervalMilliseconds,
-      includesProcessPower: isInterfaceVisible
+      includesProcessPower: effectiveIncludesProcessPower,
+      ioReportSamples: isInterfaceVisible ? visibleIOReportSamples : backgroundIOReportSamples
     )
     snapshotSession = session
 
@@ -330,7 +405,7 @@ final class MonitorStore {
 
   private static func loadMenuBarMetrics(key: String) -> [MenuBarMetric] {
     guard let rawValues = UserDefaults.standard.stringArray(forKey: key) else {
-      return [.power, .cpuTotal]
+      return defaultMenuBarMetrics
     }
 
     let metrics = rawValues.reduce(into: [MenuBarMetric]()) { result, rawValue in
@@ -348,10 +423,28 @@ final class MonitorStore {
       }
     }
 
-    return metrics.isEmpty ? [.power, .cpuTotal] : metrics
+    return metrics.isEmpty ? defaultMenuBarMetrics : metrics
+  }
+
+  private static func loadMenuBarMetricOrder(key: String) -> [MenuBarMetric] {
+    guard let rawValues = UserDefaults.standard.stringArray(forKey: key) else {
+      return MenuBarMetric.defaultMenuBarOrder
+    }
+
+    let metrics = rawValues.compactMap(MenuBarMetric.init(rawValue:))
+
+    return MenuBarMetric.normalizedMenuBarOrder(metrics)
   }
 
   private static func loadMenuBarTextShowsLabels(key: String) -> Bool {
+    guard UserDefaults.standard.object(forKey: key) != nil else {
+      return true
+    }
+
+    return UserDefaults.standard.bool(forKey: key)
+  }
+
+  private static func loadProcessPowerRanking(key: String) -> Bool {
     guard UserDefaults.standard.object(forKey: key) != nil else {
       return true
     }

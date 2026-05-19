@@ -60,4 +60,33 @@ enum MenuBarMetric: String, CaseIterable, Identifiable, Sendable {
       return "GPU W"
     }
   }
+
+  static let defaultMenuBarOrder: [MenuBarMetric] = [
+    .cpuTotal,
+    .pCPU,
+    .eCPU,
+    .gpu,
+    .memory,
+    .network,
+    .power,
+    .cpuPower,
+    .gpuPower,
+  ]
+
+  static func normalizedMenuBarOrder(_ metrics: [MenuBarMetric]) -> [MenuBarMetric] {
+    var seen = Set<MenuBarMetric>()
+    var orderedMetrics = metrics.filter { seen.insert($0).inserted }
+    orderedMetrics.append(contentsOf: defaultMenuBarOrder.filter { seen.insert($0).inserted })
+
+    return orderedMetrics
+  }
+
+  static func orderedMenuBarSelection(
+    _ metrics: [MenuBarMetric],
+    order: [MenuBarMetric]
+  ) -> [MenuBarMetric] {
+    let selectedMetrics = Set(metrics)
+
+    return normalizedMenuBarOrder(order).filter { selectedMetrics.contains($0) }
+  }
 }

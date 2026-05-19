@@ -8,7 +8,11 @@ struct MenuBarLabelView: View {
   let showsGraph: Bool
   let showsTextLabels: Bool
   let metrics: [MenuBarMetric]
-  let revision: Int
+  let isPanelOpen: Bool
+
+  @State private var reservedImageWidth: CGFloat?
+
+  private let openPanelWidthBuffer: CGFloat = 18
 
   var body: some View {
     HStack(spacing: 5) {
@@ -20,21 +24,32 @@ struct MenuBarLabelView: View {
       }
 
       if showsText || showsGraph {
+        let image = MenuBarLabelImageRenderer.image(
+          snapshot: snapshot,
+          history: history,
+          metrics: metrics,
+          showsText: showsText,
+          showsGraph: showsGraph,
+          showsLabels: showsTextLabels
+        )
+
         Image(
-          nsImage: MenuBarLabelImageRenderer.image(
-            snapshot: snapshot,
-            history: history,
-            metrics: metrics,
-            showsText: showsText,
-            showsGraph: showsGraph,
-            showsLabels: showsTextLabels
-          )
+          nsImage: image
         )
           .interpolation(.high)
+          .frame(width: frameWidth(for: image.size.width), height: image.size.height)
           .accessibilityLabel(accessibilityLabel)
+          .onAppear {
+            updateReservedWidth(currentWidth: image.size.width)
+          }
+          .onChange(of: image.size.width) { _, width in
+            updateReservedWidth(currentWidth: width)
+          }
+          .onChange(of: isPanelOpen) { _, _ in
+            updateReservedWidth(currentWidth: image.size.width)
+          }
       }
     }
-    .id(revision)
   }
 
   private var accessibilityLabel: String {
@@ -50,5 +65,22 @@ struct MenuBarLabelView: View {
       parts.append("graph")
     }
     return parts.joined(separator: ", ")
+  }
+
+  private func frameWidth(for currentWidth: CGFloat) -> CGFloat? {
+    guard isPanelOpen else {
+      return nil
+    }
+
+    return max(reservedImageWidth ?? 0, ceil(currentWidth + openPanelWidthBuffer))
+  }
+
+  private func updateReservedWidth(currentWidth: CGFloat) {
+    guard isPanelOpen else {
+      reservedImageWidth = nil
+      return
+    }
+
+    reservedImageWidth = max(reservedImageWidth ?? 0, ceil(currentWidth + openPanelWidthBuffer))
   }
 }

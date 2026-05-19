@@ -41,7 +41,7 @@ struct ProcessPowerChartView: View {
     .padding(.bottom, 9)
     .background(.background, in: backgroundShape)
     .overlay {
-      backgroundShape
+      ProcessPowerTableBorder(cornerRadius: cornerRadius)
         .stroke(.secondary.opacity(0.12), lineWidth: 1)
     }
     .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 3)
@@ -58,6 +58,30 @@ struct ProcessPowerChartView: View {
       bottomTrailingRadius: cornerRadius,
       topTrailingRadius: 0
     )
+  }
+}
+
+private struct ProcessPowerTableBorder: Shape {
+  let cornerRadius: CGFloat
+
+  func path(in rect: CGRect) -> Path {
+    let radius = min(cornerRadius, min(rect.width, rect.height) / 2)
+
+    var path = Path()
+    path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+    path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - radius))
+    path.addQuadCurve(
+      to: CGPoint(x: rect.minX + radius, y: rect.maxY),
+      control: CGPoint(x: rect.minX, y: rect.maxY)
+    )
+    path.addLine(to: CGPoint(x: rect.maxX - radius, y: rect.maxY))
+    path.addQuadCurve(
+      to: CGPoint(x: rect.maxX, y: rect.maxY - radius),
+      control: CGPoint(x: rect.maxX, y: rect.maxY)
+    )
+    path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+
+    return path
   }
 }
 

@@ -3,6 +3,7 @@ import SwiftUI
 struct SnapshotContentView: View {
   let snapshot: MetricSnapshot
   let history: [MetricSnapshot]
+  var showsProcessPowerRanking = true
 
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
@@ -49,9 +50,11 @@ struct SnapshotContentView: View {
         PowerStripView(snapshot: snapshot, history: history)
           .zIndex(1)
 
-        ProcessPowerChartView(processes: snapshot.processPower)
-          .padding(.horizontal, 16)
-          .padding(.top, -1)
+        if showsProcessPowerRanking {
+          ProcessPowerChartView(processes: snapshot.processPower)
+            .padding(.horizontal, 16)
+            .padding(.top, -1)
+        }
       }
     }
   }

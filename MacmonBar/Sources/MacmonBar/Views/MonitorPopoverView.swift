@@ -41,7 +41,11 @@ struct MonitorPopoverView: View {
   @ViewBuilder
   private var dashboard: some View {
     if let snapshot = store.snapshot {
-      SnapshotContentView(snapshot: snapshot, history: store.history)
+      SnapshotContentView(
+        snapshot: snapshot,
+        history: store.history,
+        showsProcessPowerRanking: store.showsProcessPowerRanking
+      )
     } else {
       EmptyMonitorView(status: store.status)
     }
@@ -126,7 +130,7 @@ struct MonitorPopoverView: View {
       Spacer()
 
       VStack(alignment: .trailing, spacing: 2) {
-        if page == .dashboard {
+        if page == .dashboard, store.showsProcessPowerRanking {
           Text("Process power is estimated")
             .font(.caption2)
             .foregroundStyle(.tertiary)

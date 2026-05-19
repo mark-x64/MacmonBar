@@ -9,7 +9,8 @@ struct MacmonProcessClient: Sendable {
 
   func startSnapshots(
     intervalMilliseconds: Int,
-    includesProcessPower: Bool = true
+    includesProcessPower: Bool = true,
+    ioReportSamples: Int = 4
   ) -> MacmonSnapshotSession {
     let session = ProcessSession()
     let stream = AsyncThrowingStream<MetricSnapshot, Error> { continuation in
@@ -20,7 +21,8 @@ struct MacmonProcessClient: Sendable {
         process.executableURL = executableURL
         process.arguments = Self.arguments(
           intervalMilliseconds: intervalMilliseconds,
-          includesProcessPower: includesProcessPower
+          includesProcessPower: includesProcessPower,
+          ioReportSamples: ioReportSamples
         )
 
         let stdout = Pipe()
@@ -86,7 +88,11 @@ struct MacmonSnapshotSession: Sendable {
 }
 
 extension MacmonProcessClient {
-  static func arguments(intervalMilliseconds: Int, includesProcessPower: Bool) -> [String] {
+  static func arguments(
+    intervalMilliseconds: Int,
+    includesProcessPower: Bool,
+    ioReportSamples: Int = 4
+  ) -> [String] {
     var arguments = [
       "--interval",
       "\(intervalMilliseconds)",
@@ -98,16 +104,22 @@ extension MacmonProcessClient {
       arguments.append("--no-process-power")
     }
 
+    if ioReportSamples != 4 {
+      arguments.append(contentsOf: ["--io-report-samples", "\(ioReportSamples)"])
+    }
+
     return arguments
   }
 
   func snapshots(
     intervalMilliseconds: Int,
-    includesProcessPower: Bool = true
+    includesProcessPower: Bool = true,
+    ioReportSamples: Int = 4
   ) -> AsyncThrowingStream<MetricSnapshot, Error> {
     startSnapshots(
       intervalMilliseconds: intervalMilliseconds,
-      includesProcessPower: includesProcessPower
+      includesProcessPower: includesProcessPower,
+      ioReportSamples: ioReportSamples
     ).stream
   }
 }

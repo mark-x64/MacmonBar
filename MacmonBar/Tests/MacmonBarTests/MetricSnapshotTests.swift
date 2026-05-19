@@ -109,6 +109,37 @@ func formatsMenuBarTextWithoutMetricLabels() {
 }
 
 @Test
+func menuBarMetricSelectionFollowsCustomDisplayOrder() {
+  let metrics = MenuBarMetric.orderedMenuBarSelection([
+    .network,
+    .cpuTotal,
+    .power,
+    .eCPU,
+    .network,
+    .gpuPower,
+  ], order: [
+    .gpuPower,
+    .network,
+    .eCPU,
+    .power,
+    .cpuTotal,
+  ])
+
+  #expect(metrics == [.gpuPower, .network, .eCPU, .power, .cpuTotal])
+}
+
+@Test
+func menuBarMetricOrderAppendsMissingDefaults() {
+  let metrics = MenuBarMetric.normalizedMenuBarOrder([
+    .network,
+    .cpuTotal,
+    .network,
+  ])
+
+  #expect(metrics == [.network, .cpuTotal, .pCPU, .eCPU, .gpu, .memory, .power, .cpuPower, .gpuPower])
+}
+
+@Test
 func menuBarIntervalFollowsDashboardSelectionWithOneSecondMinimum() {
   #expect(
     MonitorStore.resolvedIntervalMilliseconds(
@@ -152,6 +183,28 @@ func dashboardIntervalUsesExactSelectionWhenVisible() {
 }
 
 @Test
+func processPowerOnlyRunsWhenPanelAndRankingAreEnabled() {
+  #expect(
+    MonitorStore.resolvedIncludesProcessPower(
+      isInterfaceVisible: false,
+      showsProcessPowerRanking: true
+    ) == false
+  )
+  #expect(
+    MonitorStore.resolvedIncludesProcessPower(
+      isInterfaceVisible: true,
+      showsProcessPowerRanking: false
+    ) == false
+  )
+  #expect(
+    MonitorStore.resolvedIncludesProcessPower(
+      isInterfaceVisible: true,
+      showsProcessPowerRanking: true
+    ) == true
+  )
+}
+
+@Test
 func macmonArgumentsOnlyEnableProcessPowerWhenRequested() {
   #expect(
     MacmonProcessClient.arguments(intervalMilliseconds: 1_000, includesProcessPower: true)
@@ -161,5 +214,24 @@ func macmonArgumentsOnlyEnableProcessPowerWhenRequested() {
   #expect(
     MacmonProcessClient.arguments(intervalMilliseconds: 1_000, includesProcessPower: false)
       == ["--interval", "1000", "pipe", "--soc-info", "--no-process-power"]
+  )
+}
+
+@Test
+func macmonArgumentsCanLowerIOReportSampleCount() {
+  #expect(
+    MacmonProcessClient.arguments(
+      intervalMilliseconds: 1_000,
+      includesProcessPower: false,
+      ioReportSamples: 1
+    ) == [
+      "--interval",
+      "1000",
+      "pipe",
+      "--soc-info",
+      "--no-process-power",
+      "--io-report-samples",
+      "1",
+    ]
   )
 }

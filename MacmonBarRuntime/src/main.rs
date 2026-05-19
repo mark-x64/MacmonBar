@@ -22,6 +22,10 @@ enum Commands {
     /// Skip per-process power estimation to reduce sampling overhead
     #[arg(long, default_value_t = false)]
     no_process_power: bool,
+
+    /// Number of IOReport deltas to average per output sample
+    #[arg(long, default_value_t = 4)]
+    io_report_samples: usize,
   },
 
   /// Serve metrics over HTTP (JSON at /json, Prometheus at /metrics)
@@ -41,6 +45,10 @@ enum Commands {
     /// Skip per-process power estimation to reduce sampling overhead
     #[arg(long, default_value_t = false)]
     no_process_power: bool,
+
+    /// Number of IOReport deltas to average per output sample
+    #[arg(long, default_value_t = 4)]
+    io_report_samples: usize,
   },
 
   /// Print debug information
@@ -64,10 +72,11 @@ fn main() -> Result<(), Box<dyn Error>> {
   let args = Cli::parse();
 
   match &args.command {
-    Some(Commands::Pipe { samples, soc_info, no_process_power }) => {
+    Some(Commands::Pipe { samples, soc_info, no_process_power, io_report_samples }) => {
       let mut sampler = Sampler::new()?;
       let mut counter = 0u32;
-      let sampler_options = SamplerOptions { process_power: !*no_process_power };
+      let sampler_options =
+        SamplerOptions { process_power: !*no_process_power, io_report_samples: *io_report_samples };
 
       let soc_info_val = if *soc_info { Some(sampler.get_soc_info().clone()) } else { None };
 
@@ -89,13 +98,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
       }
     }
-    Some(Commands::Serve { port, install, uninstall, no_process_power }) => {
+    Some(Commands::Serve { port, install, uninstall, no_process_power, io_report_samples }) => {
       if *install || *uninstall {
         serve::launchd(*port, *install)?;
         return Ok(());
       }
       let mut sampler = Sampler::new()?;
-      let sampler_options = SamplerOptions { process_power: !*no_process_power };
+      let sampler_options =
+        SamplerOptions { process_power: !*no_process_power, io_report_samples: *io_report_samples };
       let soc = Arc::new(sampler.get_soc_info().clone());
       let shared: serve::SharedMetrics = Arc::new(RwLock::new(None));
 

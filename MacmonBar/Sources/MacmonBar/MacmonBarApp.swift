@@ -23,9 +23,8 @@ struct MacmonBarApp: App {
         showsGraph: monitor.showsMenuBarGraph,
         showsTextLabels: monitor.showsMenuBarTextLabels,
         metrics: monitor.selectedMenuBarMetrics,
-        revision: monitor.revision
+        isPanelOpen: monitor.isInterfaceVisible
       )
-        .id(monitor.revision)
     }
     .menuBarExtraStyle(.window)
   }
